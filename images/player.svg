@@ -1,0 +1,26 @@
+<svg width="80" height="90" viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+  <!-- fundo transparente -->
+  <rect width="80" height="90" fill="none"></rect>
+
+  <!-- cabeça -->
+  <circle cx="40" cy="48" r="26" fill="#f2c193" stroke="#c28b5c" stroke-width="2"></circle>
+
+  <!-- orelhas -->
+  <circle cx="15" cy="48" r="6" fill="#f2c193" stroke="#c28b5c" stroke-width="2"></circle>
+  <circle cx="65" cy="48" r="6" fill="#f2c193" stroke="#c28b5c" stroke-width="2"></circle>
+
+  <!-- headphones - arco (mais acima) -->
+  <path d="M18 38 Q40 10 62 38" fill="none" stroke="#333" stroke-width="8" stroke-linecap="round"></path>
+
+  <!-- headphones - almofadas (laterais mais altas) -->
+  <rect x="10" y="33" width="10" height="18" rx="4" fill="#555"></rect>
+  <rect x="60" y="33" width="10" height="18" rx="4" fill="#555"></rect>
+
+  <!-- óculos de sol -->
+  <rect x="22" y="43" width="14" height="10" rx="2" fill="black"></rect>
+  <rect x="44" y="43" width="14" height="10" rx="2" fill="black"></rect>
+  <rect x="36" y="45" width="8" height="4" fill="black"></rect>
+
+  <!-- boca -->
+  <path d="M28 62 Q40 68 52 62" stroke="#8b5a3c" stroke-width="2" fill="none"></path>
+</svg>

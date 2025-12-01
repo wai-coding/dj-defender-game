@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="eng">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dancefloor Defender</title>
+    <link rel="stylesheet" href="./styles/style.css" />
+  </head>
+
+  <body>
+    <main>
+
+      <!-- START SCREEN -->
+      <div id="game-intro">
+        <h1>Dancefloor Defender</h1>
+        <button id="start-button">Start Game</button>
+        <p>Use ⬅️ ➡️ to move the DJ • SPACE to shoot</p>
+      </div>
+
+      <!-- GAME SCREEN -->
+      <div id="game-container">
+        <div id="hud">
+          Score: <span id="score">0</span>
+        </div>
+
+        <div id="game-screen"></div>
+      </div>
+
+      <!-- GAME OVER -->
+      <div id="game-end">
+        <h1>Game Over</h1>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button id="restart-button">Restart</button>
+      </div>
+
+    </main>
+
+    <script src="./js/player.js"></script>
+    <script src="./js/enemy.js"></script>
+    <script src="./js/bullet.js"></script>
+    <script src="./js/game.js"></script>
+    <script src="./js/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+<svg width="70" height="70" viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+  <rect width="70" height="70" fill="none"></rect>
+
+  <!-- corpo verde original -->
+  <rect x="23" y="18" width="24" height="42" rx="6" fill="#22c55e" stroke="#15803d" stroke-width="2"></rect>
+
+  <!-- olhos digitais -->
+  <rect x="27" y="30" width="6" height="4" rx="1" fill="#0f0"></rect>
+  <rect x="37" y="30" width="6" height="4" rx="1" fill="#0f0"></rect>
+
+  <!-- sobrancelhas -->
+  <polygon points="26,28 33,29 33,31 26,30" fill="#16a34a"></polygon>
+  <polygon points="44,28 37,29 37,31 44,30" fill="#16a34a"></polygon>
+
+  <!-- boca hacker -->
+  <path d="M27 44 L43 44" stroke="#0f0" stroke-width="2"></path>
+
+  <!-- USB PROPORCIONAL E CENTRADA -->
+  <rect x="28" y="58" width="14" height="10" rx="2" fill="#d1d5db" stroke="#6b7280" stroke-width="1.5"></rect>
+
+  <!-- conectores internos -->
+  <rect x="30" y="60" width="4" height="6" rx="1" fill="#6b7280"></rect>
+  <rect x="36" y="60" width="4" height="6" rx="1" fill="#6b7280"></rect>
+</svg>

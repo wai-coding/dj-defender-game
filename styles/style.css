@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  background: #000;
+  font-family: Arial, sans-serif;
+  color: #fff;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* screens */
+#game-intro,
+#game-end {
+  text-align: center;
+}
+
+#game-container {
+  display: none; /* aparece só quando o jogo começa */
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* game area */
+#game-screen {
+  width: 500px;
+  height: 600px;
+  position: relative;
+  background-image: url("../images/background-light.png");
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #111;
+  border-radius: 6px;
+}
