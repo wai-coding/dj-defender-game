@@ -50,6 +50,8 @@ main {
 
   border: 2px solid #111;
   border-radius: 6px;
+
+  overflow: hidden; /* Hide any game objects that move outside the visible play area (Fix for enemies appearing outside the game area) */
 }
 
 /* INTRO GAME WINDOW */
@@ -64,7 +66,7 @@ main {
 
   border: 2px solid #111;
   border-radius: 6px;
-  overflow: hidden; /* Ensures the panel stays inside the area */
+  overflow: hidden; /* Prevent content from overflowing the visible intro window (ensures the panel stays inside the area) */
 }
 
 /* CENTRAL START PANEL (Contains game title, instructions, and Start button) */
@@ -184,7 +186,7 @@ main {
 
   border: 2px solid #111;
   border-radius: 6px;
-  overflow: hidden;
+  overflow: hidden; /* Ensure the game over panel stays fully contained within the window */
 }
 
 /* GAME OVER PANEL (inside end-game-area) */
@@ -245,4 +247,15 @@ main {
 #restart-button:active {
   transform: translateY(1px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+}
+
+#hud {
+  position: absolute;
+  top: 10px;         /* distance from the top of the background */
+  left: 10px;        /* distance from the left */
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px #000; /* readable over any background */
+  z-index: 10;       /* ensure HUD stays on top of enemies */
 }

@@ -11,6 +11,10 @@ class Game {
     this.scoreElement = document.getElementById("score");
     this.finalScoreElement = document.getElementById("final-score");
 
+    // Level (derived from difficulty)
+    this.level = 1;
+    this.levelElement = document.getElementById("level");
+
     // Core game objects
     this.player = null;
     this.enemies = [];
@@ -19,6 +23,7 @@ class Game {
     // Game state flags and counters
     this.gameIsOver = false;
     this.frames = 0; // frame counter used for timing
+    this.difficulty = 0; // difficulty level (increases over time)
 
     // Interval id for the game loop
     this.gameInterval = null;
@@ -48,7 +53,11 @@ class Game {
     this.frames = 0;
     this.gameIsOver = false;
 
-    // Reset score and update HUD
+    // Reset difficulty, level and score
+    this.difficulty = 0;
+    this.level = 1;
+    this.levelElement.innerText = this.level;
+
     this.score = 0;
     this.scoreElement.innerText = this.score;
 
@@ -70,9 +79,28 @@ class Game {
     // Increase frame counter (used for timing logic)
     this.frames++;
 
-    // Spawn a new enemy every X frames
-    if (this.frames % 90 === 0) {
-      const newEnemy = new Enemy(this.gameScreen);
+    // Increase difficulty every 600 frames (+/- 10 seconds)
+    if (this.frames % 600 === 0) {
+      this.difficulty++;
+
+      // Level is difficulty + 1 (level 1 = base difficulty)
+      this.level = this.difficulty + 1;
+      this.levelElement.innerText = this.level;
+    }
+
+    // Calculate dynamic spawn interval based on difficulty
+    // Base interval is 90 frames, but it gets smaller over time
+    const baseSpawnInterval = 90;
+    const minSpawnInterval = 40;
+    const spawnInterval = Math.max(
+      minSpawnInterval,
+      baseSpawnInterval - this.difficulty * 5
+    );
+
+    // Spawn a new enemy every 'spawnInterval' frames
+    if (this.frames % spawnInterval === 0) {
+      const speedBoost = this.difficulty * 0.3;
+      const newEnemy = new Enemy(this.gameScreen, speedBoost);
       this.enemies.push(newEnemy);
     }
 
