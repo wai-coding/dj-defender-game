@@ -2,6 +2,8 @@
 <html lang="eng">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- Page title and CSS import -->
     <title>Dancefloor Defender</title>
     <link rel="stylesheet" href="./styles/style.css" />
   </head>
@@ -9,35 +11,79 @@
   <body>
     <main>
 
-      <!-- START SCREEN -->
+      <!-- START SCREEN (shown before the game begins and includes game intro window and instructions) -->
       <div id="game-intro">
-        <h1>Dancefloor Defender</h1>
-        <button id="start-button">Start Game</button>
-        <p>Use ⬅️ ➡️ to move the DJ • SPACE to shoot</p>
+
+        <!-- Container that mimics the game window (500x600) and gives the start screen a consistent layout -->
+        <div id="intro-game-area">
+
+          <!-- Start panel with title, instructions, and start button -->
+          <div class="start-panel">
+            <h1>Dancefloor Defender</h1>
+            <h2>Defend the club from bad USBs.</h2>
+
+            <!-- Instructions section -->
+            <div class="start-controls">
+              <p>How to play:</p>
+
+              <div class="control-row">
+                <span class="key">← →</span>
+                <span class="action">Move the DJ</span>
+              </div>
+
+              <div class="control-row">
+                <span class="key">SPACE</span>
+                <span class="action">Shoot vinyl discs</span>
+              </div>
+            </div>
+
+            <!-- Start game button -->
+            <button id="start-button">Start Game</button>
+          </div>
+        </div>
       </div>
 
-      <!-- GAME SCREEN -->
+      <!-- GAME CONTAINER (shown during gameplay and holds the HUD (score) and the game-screen) -->
       <div id="game-container">
+
+        <!-- HUD section (score display) -->
         <div id="hud">
           Score: <span id="score">0</span>
         </div>
 
+        <!-- Main game area where Player, Enemies and Bullets are rendered -->
         <div id="game-screen"></div>
       </div>
 
-      <!-- GAME OVER -->
+      <!-- GAME OVER SCREEN (shown when the player loses) -->
       <div id="game-end">
-        <h1>Game Over</h1>
-        <p>Final Score: <span id="final-score">0</span></p>
-        <button id="restart-button">Restart</button>
+
+        <!-- Game Over window (uses the same 500x600 layout as the intro-game-area) -->
+        <div id="end-game-area">
+
+          <div class="end-panel">
+            <h1>Game Over</h1>
+
+            <!-- Final score display -->
+            <p class="final-score-text">
+              Final Score: <span id="final-score">0</span>
+            </p>
+
+            <!-- Restart game button -->
+            <button id="restart-button">Restart</button>
+          </div>
+
+        </div>
       </div>
 
     </main>
 
+    <!-- JAVASCRIPT FILES (class files first, Game logic, then script handling events and startup) -->
     <script src="./js/player.js"></script>
     <script src="./js/enemy.js"></script>
     <script src="./js/bullet.js"></script>
     <script src="./js/game.js"></script>
     <script src="./js/script.js"></script>
+
   </body>
 </html>

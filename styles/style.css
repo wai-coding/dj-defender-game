@@ -10,30 +10,239 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100vh; /* Centers screens vertically */
 }
 
-/* screens */
-#game-intro,
+/* SCREEN WRAPPERS (Controls which screen is visible (intro, game, or game over)) */
+/* Start screen wrapper */
+#game-intro {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centers intro content horizontally */
+}
+
+/* Game over screen wrapper (hidden at first) */
 #game-end {
-  text-align: center;
+  width: 100%;
+  display: none; /* Only shown when the player loses */
+  align-items: center;
+  justify-content: center;
 }
 
+/* Game container shown during gameplay */
 #game-container {
-  display: none; /* aparece só quando o jogo começa */
+  display: none; /* Only becomes visible when game starts */
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 10px; /* Space between HUD and game area */
 }
 
-/* game area */
+/* GAME AREA */
 #game-screen {
   width: 500px;
   height: 600px;
   position: relative;
+
   background-image: url("../images/background-light.png");
   background-size: cover;
   background-position: center;
+
   border: 2px solid #111;
   border-radius: 6px;
+}
+
+/* INTRO GAME WINDOW */
+#intro-game-area {
+  width: 500px;
+  height: 600px;
+  position: relative;
+
+  background-image: url("../images/background-light.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 2px solid #111;
+  border-radius: 6px;
+  overflow: hidden; /* Ensures the panel stays inside the area */
+}
+
+/* CENTRAL START PANEL (Contains game title, instructions, and Start button) */
+.start-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%); /* Centers horizontally */
+
+  width: 85%;
+  padding: 20px 24px;
+  border-radius: 10px;
+
+  background: rgba(10, 10, 20, 0.85); /* Semi-transparent panel */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+
+  text-align: center;
+}
+
+/* START PANEL HEADINGS (Title & Subtitle) */
+.start-panel h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.start-panel h2 {
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #cbd5f5;
+}
+
+/* HOW TO PLAY (CONTROL INSTRUCTIONS) */
+.start-controls {
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.start-controls p {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+/* Visual representation of keyboard keys */
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 60px;
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  border: 1px solid rgba(148, 163, 184, 0.9);
+  background: rgba(15, 23, 42, 0.8);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Action text next to each key */
+.action {
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+/* START BUTTON (Start Game) */
+#start-button {
+  margin-top: 8px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: none;
+
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #0b1020;
+
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+
+  transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
+}
+
+#start-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
+}
+
+#start-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+}
+
+/* GAME OVER WINDOW (Same layout as intro-game-area) */
+#end-game-area {
+  width: 500px;
+  height: 600px;
+  position: relative;
+
+  background-image: url("../images/background-light.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 2px solid #111;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* GAME OVER PANEL (inside end-game-area) */
+.end-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%); /* Centers horizontally */
+
+  width: 85%;
+  padding: 24px 26px;
+  border-radius: 10px;
+
+  background: rgba(10, 10, 20, 0.85); /* Semi-transparent panel */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+
+  text-align: center;
+}
+
+.end-panel h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.final-score-text {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: #e5e7eb;
+}
+
+/* RESTART BUTTON */
+#restart-button {
+  margin-top: 4px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: none;
+
+  background: linear-gradient(135deg, #22c55e, #3b82f6);
+  color: #0b1020;
+
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+
+  transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
+}
+
+#restart-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
+}
+
+#restart-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
 }
