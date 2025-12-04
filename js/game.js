@@ -11,6 +11,9 @@ class Game {
     this.scoreElement = document.getElementById("score");
     this.finalScoreElement = document.getElementById("final-score");
 
+    // High score list in the Game Over screen. Used to render the top scores stored in localStorage
+    this.highScoreContainer = document.getElementById("high-scores");
+
     // Level (derived from difficulty)
     this.level = 1;
     this.levelElement = document.getElementById("level");
@@ -203,11 +206,54 @@ class Game {
 
   // Called when the game ends (player hit by an enemy)
   gameOver() {
-    // Hide the game container and show the Game Over screen
-    this.gameContainer.style.display = "none";
+    // Hide game screen and show Game Over screen
+    this.gameScreen.style.display = "none";
     this.endScreen.style.display = "flex";
 
-    // Update final score text
+    // Show final score
     this.finalScoreElement.innerText = this.score;
+
+    // HIGH SCORE SYSTEM (score + level)
+    // Try to load high scores from localStorage
+    const highScoresFromLS = JSON.parse(localStorage.getItem("high-scores"));
+
+    // Create the entry for the current run
+    const currentEntry = {
+      score: this.score,
+      level: this.level,
+    };
+
+    let updatedScores;
+
+    if (!highScoresFromLS) {
+      // First time playing = create the array with only the current entry
+      updatedScores = [currentEntry];
+    } else {
+      // Copy existing scores and add the new run
+      updatedScores = highScoresFromLS;
+      updatedScores.push(currentEntry);
+
+      // Sort DESCENDING by score
+      updatedScores.sort((a, b) => b.score - a.score);
+
+      // Keep only the top 3
+      updatedScores = updatedScores.slice(0, 3);
+    }
+
+    // Save back to localStorage
+    localStorage.setItem("high-scores", JSON.stringify(updatedScores));
+
+    // Clear previous visual list
+    this.highScoreContainer.innerHTML = "";
+
+    // Render list
+    updatedScores.forEach((entry) => {
+      const li = document.createElement("li");
+
+      // Example output: "1200 pts — Level 8"
+      li.innerText = `${entry.score} points - Level ${entry.level}`;
+
+      this.highScoreContainer.appendChild(li);
+    });
   }
 }
