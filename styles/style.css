@@ -52,7 +52,7 @@ main {
   border-radius: 6px;
 
   overflow: hidden; /* Hide any game objects that move outside the visible play area (Fix for enemies appearing outside the game area) */
-  
+
   touch-action: none; /* Disable default touch actions (scroll, zoom) inside the game area (Fix for zoom while playing on mobile) */
 }
 
@@ -260,4 +260,12 @@ main {
   color: white;
   text-shadow: 2px 2px 4px #000; /* readable over any background */
   z-index: 10; /* ensure HUD stays on top of enemies */
+}
+
+/* Prevent text selection inside the HUD (score, level, lives). (Fix for accidental text highlighting when tapping rapidly on the screen during gameplay. */
+#hud,
+#hud span {
+  user-select: none; /* Standard */
+  -webkit-user-select: none; /* Safari / iOS */
+  -ms-user-select: none; /* Older Edge/IE */
 }
