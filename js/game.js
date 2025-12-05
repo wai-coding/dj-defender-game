@@ -182,6 +182,11 @@ class Game {
 
         // Use the Bullet method didHit
         if (bullet.didHit(enemy)) {
+          // Plays ememy hit sound if the function exists
+          if (window.playEnemyHitSound) {
+            window.playEnemyHitSound();
+          }
+
           // Remove from DOM
           bullet.remove();
           enemy.remove();

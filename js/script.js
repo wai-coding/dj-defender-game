@@ -49,6 +49,66 @@ window.onload = function () {
   // Initial theme (light) – ensures button text is correct on load
   applyTheme();
 
+  // All mute buttons (one per screen)
+  const muteButtons = document.querySelectorAll(".mute-toggle");
+
+  // Background music (loops during the game)
+  const bgMusic = new Audio("./assets/music.mp3");
+  bgMusic.loop = true;
+  bgMusic.volume = 0.3; // adjust music volume
+
+  // Shoot sound
+  const shootSound = new Audio("./assets/shoot.wav");
+  shootSound.volume = 0.7; // adjust shoot fx volume
+
+  // Enemy hit sound
+  const enemyHitSound = new Audio("./assets/enemy-hit.wav");
+  enemyHitSound.volume = 0.7; // adjust enemy hit fx volume
+
+  // Global mute state (affects music + sfx)
+  let isMuted = false;
+
+  function playEnemyHitSound() {
+    if (isMuted) return; // Respects the mute
+
+    try {
+      enemyHitSound.currentTime = 0;
+      enemyHitSound.play();
+    } catch (e) {}
+  }
+
+  // Makes the function accessible outside of this file.
+  window.playEnemyHitSound = playEnemyHitSound;
+
+  // Update mute button labels
+  function updateMuteUI() {
+    muteButtons.forEach((btn) => {
+      btn.textContent = isMuted ? "UNMUTE" : "MUTE";
+    });
+  }
+
+  // Attach behavior to mute buttons
+  muteButtons.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      isMuted = !isMuted;
+
+      if (isMuted) {
+        bgMusic.pause();
+      } else {
+        // Try to resume music from current position
+        bgMusic.play().catch(() => {
+          // If the browser blocks autoplay, it will start on the next Start click
+        });
+      }
+
+      updateMuteUI();
+      btn.blur(); // avoid space bar triggering the button again
+    });
+  });
+
+  // Initialize button labels
+  updateMuteUI();
+
   // Start game
   startButton.addEventListener("click", function () {
     ourGame = new Game();
@@ -81,6 +141,16 @@ window.onload = function () {
 
       const newBullet = new Bullet(ourGame.gameScreen, bulletLeft, bulletTop);
       ourGame.bullets.push(newBullet);
+      // Play shoot sound (if not muted)
+      if (!isMuted) {
+        try {
+          // Quick reset so the sound can play again rapidly
+          shootSound.currentTime = 0;
+          shootSound.play();
+        } catch (e) {
+          // ignore errors if the browser blocks sound
+        }
+      }
     }
   });
 
@@ -118,6 +188,16 @@ window.onload = function () {
 
         const newBullet = new Bullet(ourGame.gameScreen, bulletLeft, bulletTop);
         ourGame.bullets.push(newBullet);
+
+        // Play shoot sound (if not muted)
+        if (!isMuted) {
+          try {
+            shootSound.currentTime = 0;
+            shootSound.play();
+          } catch (e) {
+            // ignore if mobile blocks sound
+          }
+        }
       }
     });
 
