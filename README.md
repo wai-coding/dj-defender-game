@@ -1,112 +1,112 @@
 # Dancefloor Defender
 
-## Game Description
-Dancefloor Defender is a fast-paced retro arcade shooter where you play as a DJ defending the nightclub dancefloor from falling USB drives.  
-The player moves horizontally across the bottom of the screen and shoots vinyl discs to destroy incoming enemies.  
-As time passes, the difficulty increases: enemies fall faster and spawn more frequently.  
-The objective is to survive as long as possible, score points by destroying or avoiding enemies, and avoid losing all three lives.  
-The game includes sound effects, background music, light/dark mode, keyboard/mobile touch controls, and a local high-score system to track your best performances.
+A fast-paced retro arcade shooter built with vanilla JavaScript, HTML, and CSS.  
+Defend the nightclub dancefloor from falling USB drives — move, shoot, and survive as long as you can!
 
-## Current Features Implemented
+![Dancefloor Defender](./images/logo.png)
+
+---
+
+## How to Play
+
+| Control         | Keyboard          | Touch (Mobile)         |
+| --------------- | ----------------- | ---------------------- |
+| Move left       | `←` Arrow         | Tap left third         |
+| Move right      | `→` Arrow         | Tap right third        |
+| Shoot           | `Space`           | Tap center third       |
+| Pause / Resume  | `P`               | MENU button            |
+
+- **+1 point** — enemy reaches the bottom of the screen  
+- **+2 points** — enemy destroyed by a bullet  
+- You start with **3 lives**. Each collision with an enemy costs 1 life.  
+- Difficulty increases every ~10 seconds (faster spawns, faster enemies).
+
+---
+
+## Features
 
 ### Core Gameplay
-- The player (DJ head) is displayed on screen and can move horizontally using the left and right arrow keys.  
-- Touch controls implemented:  
-  - Tap left: move left  
-  - Tap right: move right  
-  - Tap center: shoot  
-- The game area is set to 500×600 pixels with switchable light and dark backgrounds.  
-- Enemies (USB drives) spawn at the top of the screen and fall downward. Their speed increases with difficulty.  
-- Bullets (vinyl discs) are created when the SPACE key is pressed or when tapping the middle of the screen on mobile.  
-- Bullets travel upward and are removed once they exit the screen.  
-- Enemies are removed when they leave the screen or when destroyed by a bullet.  
-- Collision detection implemented for:
-  - Player colliding with an enemy (player loses 1 life).  
-  - Bullet colliding with an enemy (both elements are removed and a hit sound plays).  
-- Lives system implemented:  
-  - Player starts with 3 lives  
-  - Each collision with an enemy removes 1 life  
-  - Game Over occurs only when lives reach 0  
-- Scoring system implemented:  
-  - Enemy reaches the bottom: +1 point  
-  - Enemy destroyed by a bullet: +2 points  
-- Progressive difficulty system implemented:
-  - Difficulty increases every 600 frames (~10 seconds)  
-  - Enemy falling speed increases with difficulty  
-  - Enemy spawn interval decreases from 90 frames down to a minimum of 40 frames  
-- Level system displayed in the HUD:  
-  - Level = Difficulty + 1  
-  - Maximum spawn speed reached at Level 11  
-- Infinite gameplay: difficulty stops increasing after reaching the minimum spawn interval, but the game continues indefinitely.
+- Smooth 60 FPS game loop with frame-based timing  
+- Progressive difficulty curve with capped spawn rate and enemy speed  
+- Lives system (3 lives) with game over on 0  
+- Score and level tracking displayed in a real-time HUD  
 
-### Architecture and Code Structure
-- The project uses Object-Oriented Programming with the following classes:
-  - `Player`  
-  - `Enemy`  
-  - `Bullet`  
-  - `Game`
-- A game loop runs at 60 FPS to update entity positions, detect collisions, spawn enemies, apply difficulty scaling, and clean up off-screen elements.  
-- Dynamic DOM manipulation is used to draw, move and delete all game objects.  
-- Keyboard events (`keydown`, `keyup`) handle movement and shooting input.  
-- Touch event listeners handle left/right movement and shooting on mobile devices.  
-- UI screens implemented:
-  - Start Screen  
-  - Game Screen  
-  - Game Over Screen  
-- HUD elements show Score, Level, and Lives (updated in real time).  
-- High score system implemented using `localStorage`:
-  - Stores the top 3 runs (score + level)  
-  - Automatically sorted in descending order  
-  - Displayed on the Game Over screen  
+### Polish & Game Feel
+- **Screen shake** on player damage and enemy destruction  
+- **Enemy hit flash** — brief brightness burst before removal  
+- **Animated score count-up** with pop effect  
+- **Smooth screen transitions** (fade in/out between Start, Game, and Game Over)  
+- **Level-up indicator** — centered "Level X" overlay with fade animation on difficulty increase  
+- **Heart-based lives** — remaining lives shown as ♥ icons, lost lives as ♡  
+- **Damage flash** — brief red radial overlay when the player loses a life  
+- **Enhanced HUD** — larger gold score with glow, flex-layout HUD, improved visual hierarchy  
+- **Menu polish** — consistent typography, gold-highlighted #1 high score, button focus states
 
-### Visual & Audio Assets
-- Light and dark background images integrated.  
-- Player sprite integrated.  
-- Enemy sprite integrated.  
-- Bullet sprite integrated.  
-- Background music loops during the game.  
-- Sound effects implemented for:
-  - Shooting  
-  - Enemy hit  
-- Mute toggle available across all screens (affecting music and sound effects).  
-- Theme toggle available across all screens (switching between light and dark mode).
+### Audio
+- Background music with looping and volume fade  
+- Shoot and enemy-hit sound effects  
+- Mute toggle in pause menu — state persisted in `localStorage`  
+- Music fades down on Game Over, resumes on restart without restarting the track  
+
+### UI & Branding
+- **Pause menu** (P key or MENU button) with Resume, Options, Restart, and Quit to Start  
+- Light / Dark theme toggle in pause menu options  
+- Best Score displayed on Start and Game Over screens  
+- Top 3 high scores stored in `localStorage` (score + level)  
+- Mobile-friendly touch controls  
+
+### Technical Highlights
+- **Restart without page reload** — game state fully reset in JS (no duplicate loops, listeners, or audio instances)  
+- Object-Oriented architecture: `Player`, `Enemy`, `Bullet`, `Game` classes  
+- Centralized difficulty configuration with safe caps  
+- No frameworks, no build tools — pure vanilla JS, HTML, CSS  
+- Clean DOM management — entities created and removed without leaks  
 
 ---
 
-## Features Planned for Future Development
+## Tech Stack
 
-### Gameplay Enhancements
-- Additional enemy types with unique speeds, movement patterns or behaviors.  
-- Power-ups such as faster shooting, multi-shot or temporary shields.  
-- Optional boss enemy or boss stage.  
-- Additional difficulty modes.
-
-### Visual and Audio Improvements
-- Explosion animation when an enemy is destroyed.  
-- Screen shake or visual hit feedback.  
-- Dynamic animated backgrounds.  
-- More elaborate player and enemy animations.
-
-### UI and User Experience
-- Enhanced Start and Game Over screens with improved visual design.  
-- Pause/resume functionality.  
-- Settings menu (audio volume, difficulty modes, control preferences).  
-
-### Additional Game Options
-- Character selection (different DJ avatars).  
-- Alternate bullet skins (vinyl colors or special effects).  
-- Extended high-score saving (more than 3 entries, dates, longest run, user name etc.).
-
-### Technical Improvements
-- Shooting cooldown to prevent extremely fast firing when holding SPACE.  
-- Further optimization for mobile responsiveness and touch input accuracy.
+- **HTML5** — semantic markup, screen structure  
+- **CSS3** — animations (shake, flash, fade), transitions, responsive layout  
+- **JavaScript (ES6)** — OOP classes, DOM manipulation, `localStorage`, `requestAnimationFrame`  
 
 ---
 
-## Technologies Used
-- HTML5 for structure  
-- CSS3 for styling and responsive layout  
-- Vanilla JavaScript (ES6 classes)  
-- DOM manipulation for rendering game objects  
-- LocalStorage API for high score persistence  
-- Audio API for sound effects and background music
+## How to Run Locally
+
+1. Clone or download the repository  
+2. Open `index.html` in any modern browser  
+3. Click **Start Game** and defend the dancefloor!
+
+> No server, build step, or dependencies required.
+
+---
+
+## Project Structure
+
+```
+index.html              → Entry point (all three screens)
+styles/
+  style.css             → All styling, animations, transitions
+js/
+  player.js             → Player class (movement, position)
+  enemy.js              → Enemy class (spawn, movement, collision)
+  bullet.js             → Bullet class (movement, hit detection)
+  game.js               → Game class (loop, scoring, difficulty, state)
+  script.js             → UI logic, audio, input listeners, startup
+assets/                 → Audio files (music, SFX)
+images/                 → Sprites, backgrounds, logo, favicon
+```
+
+---
+
+## Learning Highlights
+
+- Building a complete game loop with `setInterval` at 60 FPS  
+- Managing game state (start → play → game over → restart) without page reloads  
+- DOM-based rendering with dynamic element creation and cleanup  
+- Collision detection using `getBoundingClientRect()`  
+- Progressive difficulty design with centralized config and safe caps  
+- Audio API: looping, fading, mute persistence, preventing stacking  
+- CSS animations for game feel (shake, flash, score pop, screen transitions)  
+- `localStorage` for high scores and user preferences

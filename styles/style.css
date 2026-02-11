@@ -5,37 +5,79 @@ body {
   color: #fff;
 }
 
+.screen {
+  opacity: 1;
+  transition: opacity 200ms ease;
+}
+
+.screen.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes dd-shake {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-3px, 2px); }
+  40%  { transform: translate(3px, -2px); }
+  60%  { transform: translate(-2px, 3px); }
+  80%  { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.shake {
+  animation: dd-shake 140ms linear;
+}
+
+.enemy-hit {
+  filter: brightness(2) contrast(1.2);
+  transition: filter 0ms;
+}
+
+@keyframes dd-score-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.score-pop {
+  animation: dd-score-pop 180ms ease-out;
+}
+
+.best-score-text {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #f9fafb;
+  opacity: 0.85;
+}
+
 main {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; /* Centers screens vertically */
+  min-height: 100vh;
 }
 
-/* SCREEN WRAPPERS (Controls which screen is visible (intro, game, or game over)) */
-/* Start screen wrapper */
+/* screen wrappers */
 #game-intro {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center; /* Centers intro content horizontally */
+  justify-content: center;
 }
 
-/* Game over screen wrapper (hidden at first) */
 #game-end {
   width: 100%;
-  display: none; /* Only shown when the player loses */
+  display: none;
   align-items: center;
   justify-content: center;
 }
 
-/* Game container shown during gameplay */
 #game-container {
-  display: none; /* Only becomes visible when game starts */
+  display: none;
   flex-direction: column;
   align-items: center;
-  gap: 10px; /* Space between HUD and game area */
+  gap: 10px;
 }
 
 /* GAME AREA */
@@ -51,9 +93,9 @@ main {
   border: 2px solid #111;
   border-radius: 6px;
 
-  overflow: hidden; /* Hide any game objects that move outside the visible play area (Fix for enemies appearing outside the game area) */
+  overflow: hidden; /* clip entities that leave the game area */
 
-  touch-action: none; /* Disable default touch actions (scroll, zoom) inside the game area (Fix for zoom while playing on mobile) */
+  touch-action: none; /* prevent zoom/scroll on mobile */
 }
 
 /* INTRO GAME WINDOW */
@@ -68,21 +110,21 @@ main {
 
   border: 2px solid #111;
   border-radius: 6px;
-  overflow: hidden; /* Prevent content from overflowing the visible intro window (ensures the panel stays inside the area) */
+  overflow: hidden;
 }
 
-/* CENTRAL START PANEL (Contains game title, instructions, and Start button) */
+/* start panel */
 .start-panel {
   position: absolute;
   top: 8px;
   left: 50%;
-  transform: translateX(-50%); /* Centers horizontally */
+  transform: translateX(-50%);
 
   width: 85%;
   padding: 16px 24px;
   border-radius: 10px;
 
-  background: rgba(10, 10, 20, 0.85); /* Semi-transparent panel */
+  background: rgba(10, 10, 20, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
 
@@ -92,7 +134,7 @@ main {
   align-items: center;
 }
 
-/* START PANEL HEADINGS (Title & Subtitle) */
+/* start panel headings */
 .start-panel h1 {
   margin: 20px 0 6px;
   font-size: 32px;
@@ -106,7 +148,7 @@ main {
   color: #cbd5f5;
 }
 
-/* HOW TO PLAY (CONTROL INSTRUCTIONS) */
+/* how to play */
 .start-controls {
   margin: 5px 0 20px 0;
   font-size: 14px;
@@ -205,7 +247,6 @@ main {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
 }
 
-/* GAME OVER WINDOW (Same layout as intro-game-area) */
 #end-game-area {
   width: 500px;
   height: 600px;
@@ -217,21 +258,20 @@ main {
 
   border: 2px solid #111;
   border-radius: 6px;
-  overflow: hidden; /* Ensure the game over panel stays fully contained within the window */
+  overflow: hidden;
 }
 
-/* GAME OVER PANEL (inside end-game-area) */
 .end-panel {
   position: absolute;
   bottom: 20px;
   left: 50%;
-  transform: translateX(-50%); /* Centers horizontally */
+  transform: translateX(-50%);
 
   width: 85%;
   padding: 24px 26px;
   border-radius: 10px;
 
-  background: rgba(10, 10, 20, 0.85); /* Semi-transparent panel */
+  background: rgba(10, 10, 20, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
 
@@ -245,9 +285,11 @@ main {
 }
 
 .final-score-text {
-  margin: 0 0 18px;
-  font-size: 15px;
-  color: #e5e7eb;
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
 }
 
 /* RESTART BUTTON */
@@ -282,24 +324,57 @@ main {
 
 #hud {
   position: absolute;
-  top: 10px; /* distance from the top of the background */
-  left: 10px; /* distance from the left */
-  font-size: 18px;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: bold;
   color: white;
-  text-shadow: 2px 2px 4px #000; /* readable over any background */
-  z-index: 10; /* ensure HUD stays on top of enemies */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 10;
 }
 
-/* Prevent text selection inside the HUD (score, level, lives). (Fix for accidental text highlighting when tapping rapidly on the screen during gameplay. */
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+}
+
+/* Subtle separator between HUD items */
+.hud-item + .hud-item {
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hud-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.hud-value {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Prevent text selection on rapid tap */
 #hud,
 #hud span {
-  user-select: none; /* Standard */
-  -webkit-user-select: none; /* Safari / iOS */
-  -ms-user-select: none; /* Older Edge/IE */
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
-/* THEME TOGGLE BUTTON (light/dark mode switch) */
+/* theme toggle */
 .theme-toggle {
   position: absolute;
   top: 10px;
@@ -334,7 +409,6 @@ main {
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
 }
 
-/* MUTE TOGGLE BUTTON */
 .mute-toggle {
   position: absolute;
   top: 10px;
@@ -359,5 +433,288 @@ main {
 
 .mute-toggle:hover {
   opacity: 1;
+  transform: translateY(-1px);
+}
+
+.enemy {
+  transition: filter 0ms;
+}
+
+#hud-score #score {
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.5), 0 0 2px rgba(251, 191, 36, 0.3);
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: center;
+}
+
+.heart {
+  display: inline-block;
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.1;
+  margin: 0 1px;
+  vertical-align: middle;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.heart.full {
+  color: #ef4444;
+  text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+.heart.empty {
+  color: rgba(255, 255, 255, 0.25);
+  text-shadow: none;
+}
+
+#level-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  white-space: nowrap;
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 0 20px rgba(249, 115, 22, 0.8),
+    0 0 40px rgba(236, 72, 153, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+#level-indicator.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#damage-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.35) 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 15;
+  transition: opacity 80ms ease-out;
+}
+
+#damage-overlay.flash {
+  opacity: 1;
+}
+
+.start-panel h1,
+.end-panel h1 {
+  text-shadow: 0 2px 12px rgba(249, 115, 22, 0.4);
+}
+
+.end-panel h2 {
+  margin: 12px 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #e5e7eb;
+  opacity: 0.9;
+}
+
+#high-scores {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+
+#high-scores li {
+  padding: 5px 10px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+#high-scores li:first-child {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  font-weight: 600;
+}
+
+/* Button focus states for accessibility */
+#start-button:focus-visible,
+#restart-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 3px;
+}
+
+.theme-toggle:focus-visible,
+.mute-toggle:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+#pause-menu-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.85);
+  color: #f9fafb;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0.7;
+  z-index: 11;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  transition: opacity 0.15s ease, transform 0.1s ease, background 0.15s ease;
+}
+
+#pause-menu-button:hover {
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.95);
+  transform: translateY(-1px);
+}
+
+#pause-menu-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+#pause-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+#pause-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#pause-card {
+  width: 260px;
+  padding: 28px 24px;
+  border-radius: 12px;
+  background: rgba(10, 10, 20, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#pause-card h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(249, 115, 22, 0.4);
+}
+
+.pause-btn {
+  width: 100%;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.pause-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 3px;
+}
+
+#resume-button {
+  background: linear-gradient(135deg, #22c55e, #3b82f6);
+  color: #0b1020;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+#resume-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+#options-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#options-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+#pause-restart-button {
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #0b1020;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+#pause-restart-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+#quit-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#quit-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+#options-panel {
+  width: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#options-panel.visible {
+  display: flex;
+}
+
+.pause-option-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.pause-option-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
   transform: translateY(-1px);
 }

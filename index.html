@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- Page title and CSS import -->
+    <!-- Page title -->
     <title>Dancefloor Defender</title>
     <link rel="stylesheet" href="./styles/style.css" />
     <link rel="icon" type="image/png" href="./images/favicon.png" />
@@ -12,30 +12,20 @@
   <body>
     <main>
 
-      <!-- START SCREEN (shown before the game begins and includes game intro window and instructions) -->
-      <div id="game-intro">
+      <!-- Start screen -->
+      <div id="game-intro" class="screen">
 
-        <!-- Container that mimics the game window (500x600) -->
         <div id="intro-game-area">
 
-          <!-- Mute toggle button -->
-          <button class="mute-toggle" type="button">MUTE</button>
-
-          <!-- Theme toggle button (light/dark mode) -->
-          <button class="theme-toggle">TURN OFF THE LIGHTS</button>
-
-          <!-- Start panel with title, instructions, and start button -->
           <div class="start-panel">
             <h1>Dancefloor Defender</h1>
             <h2>Defend the club from bad DJs.</h2>
             <img id="game-logo" src="./images/logo.png" alt="Game Logo">
 
-            <!-- HOW TO PLAY -->
             <div class="start-controls">
               <p>How to play</p>
 
               <div class="controls-columns">
-                <!-- Keyboard column -->
                 <div class="controls-block">
                   <h3 class="controls-title">Keyboard</h3>
 
@@ -50,7 +40,6 @@
                   </div>
                 </div>
 
-                <!-- Touch column -->
                 <div class="controls-block">
                   <h3 class="controls-title">Touch</h3>
 
@@ -72,60 +61,65 @@
               </div>
             </div>
 
-            <!-- Start game button -->
             <button id="start-button">Start Game</button>
           </div>
         </div>
       </div>
 
-      <!-- GAME CONTAINER (shown during gameplay and holds the HUD (score/level/lives) and the game-screen) -->
-      <div id="game-container">
+      <!-- Game container -->
+      <div id="game-container" class="screen">
 
-        <!-- Main game area where Player, Enemies and Bullets are rendered -->
+        <!-- Game area -->
         <div id="game-screen">
 
-          <!-- Mute toggle button -->
-          <button class="mute-toggle" type="button">MUTE</button>
+          <button id="pause-menu-button" type="button">MENU</button>
 
-          <!-- Theme toggle button (light/dark mode) -->
-          <button class="theme-toggle">TURN OFF THE LIGHTS</button>
-
-          <!-- HUD section (score/level/lives display) -->
-          <div id="hud">
-            Score: <span id="score">0</span>
-            Level: <span id="level">1</span>
-            Lives: <span id="lives">3</span>
+          <div id="pause-overlay">
+            <div id="pause-card">
+              <h2>PAUSED</h2>
+              <button id="resume-button" class="pause-btn">RESUME</button>
+              <button id="options-button" class="pause-btn">OPTIONS</button>
+              <div id="options-panel">
+                <button id="pause-mute-button" type="button" class="pause-btn pause-option-btn">MUTE</button>
+                <button id="pause-theme-button" type="button" class="pause-btn pause-option-btn">TURN OFF THE LIGHTS</button>
+              </div>
+              <button id="pause-restart-button" class="pause-btn">RESTART</button>
+              <button id="quit-button" class="pause-btn">QUIT</button>
+            </div>
           </div>
+
+          <!-- HUD -->
+          <div id="hud">
+            <div id="hud-score" class="hud-item"><span class="hud-label">SCORE</span><span id="score" class="hud-value">0</span></div>
+            <div id="hud-level" class="hud-item"><span class="hud-label">LEVEL</span><span id="level" class="hud-value">1</span></div>
+            <div id="hud-lives" class="hud-item"><span class="hud-label">LIVES</span><span id="lives" class="hud-value">♥ ♥ ♥</span></div>
+          </div>
+
+          <div id="level-indicator"></div>
+
+          <div id="damage-overlay"></div>
 
         </div>
 
       </div>
 
-      <!-- GAME OVER SCREEN (shown when the player loses) -->
-      <div id="game-end">
+      <!-- Game over screen -->
+      <div id="game-end" class="screen">
 
-        <!-- Game Over window (uses the same layout as the intro-game-area) -->
         <div id="end-game-area">
-
-          <!-- Mute toggle button -->
-          <button class="mute-toggle" type="button">MUTE</button>
-
-          <!-- Theme toggle button (light/dark mode) -->
-          <button class="theme-toggle">TURN OFF THE LIGHTS</button>
 
           <div class="end-panel">
             <h1>Game Over</h1>
 
-            <!-- Final score display -->
             <p class="final-score-text">
               Final Score: <span id="final-score">0</span>
             </p>
 
-            <!-- High Scores list (stored in localStorage) -->
+            <p class="best-score-text">Best Score: <span id="best-score-end">0</span></p>
+
             <h2>High Scores</h2>
             <ol id="high-scores"></ol>
 
-            <!-- Restart game button -->
             <button id="restart-button">Restart</button>
 
           </div>
@@ -135,7 +129,7 @@
 
     </main>
 
-    <!-- JAVASCRIPT FILES (class files first, Game logic, then script handling events and startup) -->
+    <!-- JS: classes → game → UI/audio -->
     <script src="./js/player.js"></script>
     <script src="./js/enemy.js"></script>
     <script src="./js/bullet.js"></script>

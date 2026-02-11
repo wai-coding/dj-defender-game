@@ -1,166 +1,421 @@
+const DIFFICULTY_CONFIG = {
+  baseSpawnInterval: 90,      // frames between spawns at level 1
+  minSpawnInterval: 40,       // fastest allowed spawn rate
+  spawnReductionPerLevel: 5,  // frames subtracted per difficulty tick
+  difficultyTickFrames: 600,  // frames between difficulty increases (~10 s)
+  maxDifficulty: 15,          // cap difficulty so it doesn't go infinite
+  speedBoostPerLevel: 0.3,    // enemy speed increase per difficulty tick
+  maxSpeedBoost: 4.5,         // cap speed boost (prevents unreactable speeds)
+};
+
 class Game {
   constructor() {
-    // DOM elements for the three main screens
     this.startScreen = document.getElementById("game-intro");
     this.gameContainer = document.getElementById("game-container");
     this.gameScreen = document.getElementById("game-screen");
     this.endScreen = document.getElementById("game-end");
 
-    // Score
     this.score = 0;
+    this.displayedScore = 0;
+    this.scoreAnimationId = null; // avoid stacking RAF
     this.scoreElement = document.getElementById("score");
     this.finalScoreElement = document.getElementById("final-score");
 
-    // High score list in the Game Over screen. Used to render the top scores stored in localStorage
+    this.bestScoreElement = document.getElementById("best-score");
+    this.bestScoreEndElement = document.getElementById("best-score-end");
+
     this.highScoreContainer = document.getElementById("high-scores");
 
-    // Level (derived from difficulty)
     this.level = 1;
     this.levelElement = document.getElementById("level");
 
-    // Lives system (player health)
     this.lives = 3;
     this.livesElement = document.getElementById("lives");
+    this.levelIndicator = document.getElementById("level-indicator");
+    this.damageOverlay = document.getElementById("damage-overlay");
+    this.maxLives = 3;
 
-    // Core game objects
     this.player = null;
     this.enemies = [];
     this.bullets = [];
 
-    // Game state flags and counters
     this.gameIsOver = false;
-    this.frames = 0; // frame counter used for timing
-    this.difficulty = 0; // difficulty level (increases over time)
+    this.frames = 0;
+    this.difficulty = 0;
 
-    // Interval id for the game loop
     this.gameInterval = null;
+    this.isPaused = false;
 
-    // Game area dimensions
     this.width = 500;
     this.height = 600;
+
+    this.updateBestScoreDisplay();
   }
 
-  // Called once when the player clicks "Start Game"
+  showScreen(screen, displayMode) {
+    screen.style.display = displayMode || "flex";
+    requestAnimationFrame(() => {
+      screen.classList.remove("is-hidden");
+    });
+  }
+
+  hideScreen(screen, cb) {
+    screen.classList.add("is-hidden");
+    setTimeout(() => {
+      screen.style.display = "none";
+      if (cb) cb();
+    }, 220);
+  }
+
+  triggerShake() {
+    this.gameScreen.classList.remove("shake");
+    void this.gameScreen.offsetWidth; // force reflow to re-trigger animation
+    this.gameScreen.classList.add("shake");
+    this.gameScreen.addEventListener(
+      "animationend",
+      () => this.gameScreen.classList.remove("shake"),
+      { once: true }
+    );
+  }
+
+  showLevelUp(level) {
+    if (!this.levelIndicator) return;
+    this.levelIndicator.textContent = `Level ${level}`;
+    this.levelIndicator.classList.add("show");
+    clearTimeout(this._levelTimeout);
+    this._levelTimeout = setTimeout(() => {
+      this.levelIndicator.classList.remove("show");
+    }, 1000);
+  }
+
+  updateLivesDisplay() {
+    if (!this.livesElement) return;
+    let hearts = "";
+    for (let i = 0; i < this.maxLives; i++) {
+      if (i < this.lives) {
+        hearts += '<span class="heart full">\u2665</span>';
+      } else {
+        hearts += '<span class="heart empty">\u2661</span>';
+      }
+    }
+    this.livesElement.innerHTML = hearts;
+  }
+
+  triggerDamageFlash() {
+    if (!this.damageOverlay) return;
+    this.damageOverlay.classList.add("flash");
+    setTimeout(() => {
+      this.damageOverlay.classList.remove("flash");
+    }, 150);
+  }
+
+  setScore(nextScore) {
+    this.score = nextScore;
+
+    // cancel previous to avoid stacking
+    if (this.scoreAnimationId) {
+      cancelAnimationFrame(this.scoreAnimationId);
+    }
+
+    const startVal = this.displayedScore;
+    const diff = nextScore - startVal;
+    const duration = 150; // ms
+    const startTime = performance.now();
+
+    const animate = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      this.displayedScore = Math.round(startVal + diff * progress);
+      this.scoreElement.innerText = this.displayedScore;
+
+      if (progress < 1) {
+        this.scoreAnimationId = requestAnimationFrame(animate);
+      } else {
+        this.scoreAnimationId = null;
+        // pop feedback
+        this.scoreElement.classList.remove("score-pop");
+        void this.scoreElement.offsetWidth;
+        this.scoreElement.classList.add("score-pop");
+      }
+    };
+
+    this.scoreAnimationId = requestAnimationFrame(animate);
+  }
+
+  getBestScoreFromLS() {
+    const scores = JSON.parse(localStorage.getItem("high-scores"));
+    if (!scores || scores.length === 0) return 0;
+    return scores[0].score; // already sorted descending
+  }
+
+  updateBestScoreDisplay() {
+    const best = this.getBestScoreFromLS();
+    if (this.bestScoreElement) this.bestScoreElement.innerText = best;
+    if (this.bestScoreEndElement) this.bestScoreEndElement.innerText = best;
+  }
+
+  // shared cleanup for restart and gameOver
+  clearGameEntities() {
+    if (this.player && this.player.element && this.player.element.parentNode) {
+      this.player.element.remove();
+    }
+    this.player = null;
+
+    this.enemies.forEach((e) => {
+      if (e.element && e.element.parentNode) e.element.remove();
+    });
+    this.enemies = [];
+
+    this.bullets.forEach((b) => {
+      if (b.element && b.element.parentNode) b.element.remove();
+    });
+    this.bullets = [];
+  }
+
   start() {
-    // Hide start and end screens, show the game container
-    this.startScreen.style.display = "none";
-    this.endScreen.style.display = "none";
-    this.gameContainer.style.display = "flex";
+    this.hideScreen(this.startScreen);
+    this.hideScreen(this.endScreen);
 
-    // Make sure the game screen has the correct size
-    this.gameScreen.style.width = `${this.width}px`;
-    this.gameScreen.style.height = `${this.height}px`;
+    // wait for hide transition
+    setTimeout(() => {
+      this.gameScreen.style.display = "";
+      this.showScreen(this.gameContainer, "flex");
 
-    // Create a new player instance
-    this.player = new Player(this.gameScreen);
+      this.gameScreen.style.width = `${this.width}px`;
+      this.gameScreen.style.height = `${this.height}px`;
 
-    // Reset arrays and counters in case we restart the game
+      this.clearGameEntities();
+
+      this.player = new Player(this.gameScreen);
+
+      this.enemies = [];
+      this.bullets = [];
+      this.frames = 0;
+      this.gameIsOver = false;
+      this.isPaused = false;
+
+      this.difficulty = 0;
+      this.level = 1;
+      this.levelElement.innerText = this.level;
+
+      this.score = 0;
+      this.displayedScore = 0;
+      this.scoreElement.innerText = 0;
+
+      this.lives = 3;
+      this.updateLivesDisplay();
+
+      if (this.levelIndicator) this.levelIndicator.classList.remove("show");
+      if (this.damageOverlay) this.damageOverlay.classList.remove("flash");
+
+      this.updateBestScoreDisplay();
+
+      // avoid interval stacking
+      if (this.gameInterval) {
+        clearInterval(this.gameInterval);
+        this.gameInterval = null;
+      }
+
+      this.gameInterval = setInterval(() => {
+        this.gameLoop();
+      }, 1000 / 60);
+    }, 240);
+  }
+
+  restart() {
+    if (this.gameInterval) {
+      clearInterval(this.gameInterval);
+      this.gameInterval = null;
+    }
+
+    // prevent orphan animation
+    if (this.scoreAnimationId) {
+      cancelAnimationFrame(this.scoreAnimationId);
+      this.scoreAnimationId = null;
+    }
+
+    this.clearGameEntities();
+    this.hideScreen(this.endScreen);
+
+    setTimeout(() => {
+      this.gameScreen.style.display = "";
+      this.showScreen(this.gameContainer, "flex");
+
+      this.player = new Player(this.gameScreen);
+
+      this.enemies = [];
+      this.bullets = [];
+      this.frames = 0;
+      this.gameIsOver = false;
+      this.isPaused = false;
+
+      this.difficulty = 0;
+      this.level = 1;
+      this.levelElement.innerText = this.level;
+
+      this.score = 0;
+      this.displayedScore = 0;
+      this.scoreElement.innerText = 0;
+
+      this.lives = 3;
+      this.updateLivesDisplay();
+
+      if (this.levelIndicator) this.levelIndicator.classList.remove("show");
+      if (this.damageOverlay) this.damageOverlay.classList.remove("flash");
+
+      this.updateBestScoreDisplay();
+
+      this.gameInterval = setInterval(() => {
+        this.gameLoop();
+      }, 1000 / 60);
+    }, 240);
+  }
+
+  quitToStart() {
+    if (this.gameInterval) {
+      clearInterval(this.gameInterval);
+      this.gameInterval = null;
+    }
+
+    if (this.scoreAnimationId) {
+      cancelAnimationFrame(this.scoreAnimationId);
+      this.scoreAnimationId = null;
+    }
+
+    this.isPaused = false;
+    this.gameIsOver = false;
+
+    this.clearGameEntities();
+
     this.enemies = [];
     this.bullets = [];
     this.frames = 0;
-    this.gameIsOver = false;
-
-    // Reset difficulty, level and score
     this.difficulty = 0;
     this.level = 1;
-    this.levelElement.innerText = this.level;
-
     this.score = 0;
-    this.scoreElement.innerText = this.score;
+    this.displayedScore = 0;
 
+    this.scoreElement.innerText = 0;
+    this.levelElement.innerText = 1;
     this.lives = 3;
-    this.livesElement.innerText = this.lives;
+    this.updateLivesDisplay();
 
-    // Start the game loop at 60 FPS
-    this.gameInterval = setInterval(() => {
-      this.gameLoop();
-    }, 1000 / 60);
+    if (this.levelIndicator) this.levelIndicator.classList.remove("show");
+    if (this.damageOverlay) this.damageOverlay.classList.remove("flash");
+    clearTimeout(this._levelTimeout);
+
+    this.hideScreen(this.gameContainer);
+    this.hideScreen(this.endScreen);
+    setTimeout(() => {
+      this.showScreen(this.startScreen, "flex");
+    }, 240);
   }
 
-  // Main loop: runs every frame
+  pause() {
+    if (this.gameIsOver || this.isPaused) return;
+    this.isPaused = true;
+    if (this.gameInterval) {
+      clearInterval(this.gameInterval);
+      this.gameInterval = null;
+    }
+  }
+
+  resume() {
+    if (this.gameIsOver || !this.isPaused) return;
+    this.isPaused = false;
+    // prevent ghost movement from held keys
+    if (this.player) this.player.speedX = 0;
+    if (!this.gameInterval) {
+      this.gameInterval = setInterval(() => {
+        this.gameLoop();
+      }, 1000 / 60);
+    }
+  }
+
+  togglePause() {
+    if (this.isPaused) {
+      this.resume();
+    } else {
+      this.pause();
+    }
+  }
+
   gameLoop() {
-    // If the game is over, stop the loop and show the Game Over screen
     if (this.gameIsOver) {
       clearInterval(this.gameInterval);
+      this.gameInterval = null;
       this.gameOver();
       return;
     }
 
-    // Increase frame counter (used for timing logic)
     this.frames++;
 
-    // Increase difficulty every 600 frames (+/- 10 seconds)
-    if (this.frames % 600 === 0) {
+    // bump difficulty every ~10s, capped
+    if (
+      this.frames % DIFFICULTY_CONFIG.difficultyTickFrames === 0 &&
+      this.difficulty < DIFFICULTY_CONFIG.maxDifficulty
+    ) {
       this.difficulty++;
 
-      // Level is difficulty + 1 (level 1 = base difficulty)
       this.level = this.difficulty + 1;
       this.levelElement.innerText = this.level;
+      this.showLevelUp(this.level);
     }
 
-    // Calculate dynamic spawn interval based on difficulty
-    // Base interval is 90 frames, but it gets smaller over time
-    const baseSpawnInterval = 90;
-    const minSpawnInterval = 40;
     const spawnInterval = Math.max(
-      minSpawnInterval,
-      baseSpawnInterval - this.difficulty * 5
+      DIFFICULTY_CONFIG.minSpawnInterval,
+      DIFFICULTY_CONFIG.baseSpawnInterval -
+        this.difficulty * DIFFICULTY_CONFIG.spawnReductionPerLevel
     );
 
-    // Spawn a new enemy every 'spawnInterval' frames
     if (this.frames % spawnInterval === 0) {
-      const speedBoost = this.difficulty * 0.3;
+      const speedBoost = Math.min(
+        this.difficulty * DIFFICULTY_CONFIG.speedBoostPerLevel,
+        DIFFICULTY_CONFIG.maxSpeedBoost
+      );
       const newEnemy = new Enemy(this.gameScreen, speedBoost);
       this.enemies.push(newEnemy);
     }
 
-    // Update positions, check collisions, remove off-screen objects, etc.
     this.update();
   }
 
-  // Update all game entities and handle collisions
   update() {
-    // Move player
     this.player.move();
 
-    // Move enemies and check collision with player or bottom of the screen
     for (let i = 0; i < this.enemies.length; i++) {
       const enemy = this.enemies[i];
       enemy.move();
 
-      // Collision: enemy hits the player = game over
       if (enemy.didCollide(this.player)) {
-        // Remove the enemy that hit the player
         enemy.remove();
         this.enemies.splice(i, 1);
         i--;
 
-        // Decrease player lives
-        this.lives--;
-        this.livesElement.innerText = this.lives;
+        this.triggerShake();
 
-        // If no lives left = Game Over
+        this.lives--;
+        this.updateLivesDisplay();
+        this.triggerDamageFlash();
+
         if (this.lives <= 0) {
-          this.gameIsOver = true; // stop checking further and game will end
+          this.gameIsOver = true;
         }
 
-        // Skip to next enemy
         continue;
       }
 
-      // Enemy goes off the screen (bottom) = remove it and add score
+      // dodged enemy = +1 point
       if (enemy.top > this.height) {
         enemy.remove();
         this.enemies.splice(i, 1);
-        i--; // adjust index after removal
+        i--;
 
-        // Enemy reached the bottom without hitting the player = +1 point
-        this.score += 1;
-        this.scoreElement.innerText = this.score;
+        this.setScore(this.score + 1);
       }
     }
 
-    // Move bullets and remove those that leave the top of the screen
     for (let i = 0; i < this.bullets.length; i++) {
       const bullet = this.bullets[i];
       bullet.move();
@@ -168,61 +423,58 @@ class Game {
       if (bullet.top < -20) {
         bullet.remove();
         this.bullets.splice(i, 1);
-        i--; // adjust index after removal
+        i--;
       }
     }
 
-    // Check collisions between bullets and enemies
-    // Nested loops: for each bullet, check all enemies
     for (let i = 0; i < this.bullets.length; i++) {
       const bullet = this.bullets[i];
 
       for (let j = 0; j < this.enemies.length; j++) {
         const enemy = this.enemies[j];
 
-        // Use the Bullet method didHit
         if (bullet.didHit(enemy)) {
-          // Plays ememy hit sound if the function exists
           if (window.playEnemyHitSound) {
             window.playEnemyHitSound();
           }
 
-          // Remove from DOM
-          bullet.remove();
-          enemy.remove();
+          this.triggerShake();
 
-          // Remove from arrays
+          bullet.remove();
           this.bullets.splice(i, 1);
+
           this.enemies.splice(j, 1);
 
-          // Enemy destroyed by a bullet = +2 points
-          this.score += 2;
-          this.scoreElement.innerText = this.score;
+          // flash then remove
+          enemy.element.classList.add("enemy-hit");
+          setTimeout(() => {
+            enemy.remove();
+          }, 70);
 
-          // Adjust bullet index since we removed the current bullet
+          this.setScore(this.score + 2);
+
           i--;
-
-          // Break out of the enemy loop for this bullet
           break;
         }
       }
     }
   }
 
-  // Called when the game ends (player hit by an enemy)
   gameOver() {
-    // Hide game screen and show Game Over screen
-    this.gameScreen.style.display = "none";
-    this.endScreen.style.display = "flex";
+    // notify audio to fade music
+    if (window.onGameOver) {
+      window.onGameOver();
+    }
 
-    // Show final score
+    this.hideScreen(this.gameContainer);
+    setTimeout(() => {
+      this.showScreen(this.endScreen, "flex");
+    }, 240);
+
     this.finalScoreElement.innerText = this.score;
 
-    // HIGH SCORE SYSTEM (score + level)
-    // Try to load high scores from localStorage
     const highScoresFromLS = JSON.parse(localStorage.getItem("high-scores"));
 
-    // Create the entry for the current run
     const currentEntry = {
       score: this.score,
       level: this.level,
@@ -231,31 +483,20 @@ class Game {
     let updatedScores;
 
     if (!highScoresFromLS) {
-      // First time playing = create the array with only the current entry
       updatedScores = [currentEntry];
     } else {
-      // Copy existing scores and add the new run
       updatedScores = highScoresFromLS;
       updatedScores.push(currentEntry);
-
-      // Sort DESCENDING by score
       updatedScores.sort((a, b) => b.score - a.score);
-
-      // Keep only the top 3
       updatedScores = updatedScores.slice(0, 3);
     }
 
-    // Save back to localStorage
     localStorage.setItem("high-scores", JSON.stringify(updatedScores));
-
-    // Clear previous visual list
+    this.updateBestScoreDisplay();
     this.highScoreContainer.innerHTML = "";
 
-    // Render list
     updatedScores.forEach((entry) => {
       const li = document.createElement("li");
-
-      // Example output: "1200 pts — Level 8"
       li.innerText = `${entry.score} points - Level ${entry.level}`;
 
       this.highScoreContainer.appendChild(li);
