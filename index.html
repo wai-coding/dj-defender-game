@@ -72,19 +72,19 @@
         <!-- Game area -->
         <div id="game-screen">
 
-          <button id="pause-menu-button" type="button">MENU</button>
+          <button id="pause-menu-button" type="button">Menu</button>
 
           <div id="pause-overlay">
             <div id="pause-card">
               <h2>PAUSED</h2>
-              <button id="resume-button" class="pause-btn">RESUME</button>
-              <button id="options-button" class="pause-btn">OPTIONS</button>
+              <button id="resume-button" class="pause-btn">Resume</button>
+              <button id="options-button" class="pause-btn">Options</button>
               <div id="options-panel">
-                <button id="pause-mute-button" type="button" class="pause-btn pause-option-btn">MUTE</button>
-                <button id="pause-theme-button" type="button" class="pause-btn pause-option-btn">TURN OFF THE LIGHTS</button>
+                <button id="pause-mute-button" type="button" class="pause-btn pause-option-btn">Mute</button>
+                <button id="pause-theme-button" type="button" class="pause-btn pause-option-btn">Turn Off The Lights</button>
               </div>
-              <button id="pause-restart-button" class="pause-btn">RESTART</button>
-              <button id="quit-button" class="pause-btn">QUIT</button>
+              <button id="pause-restart-button" class="pause-btn">Restart</button>
+              <button id="quit-button" class="pause-btn">Quit</button>
             </div>
           </div>
 
@@ -111,16 +111,37 @@
           <div class="end-panel">
             <h1>Game Over</h1>
 
-            <p class="final-score-text">
+            <p class="final-score-text compact">
               Final Score: <span id="final-score">0</span>
             </p>
 
-            <p class="best-score-text">Best Score: <span id="best-score-end">0</span></p>
+            <p id="top10-message" class="top10-message compact hidden">Congratulations! You made the Top 10!</p>
+
+            <!-- Name entry section (shown only when qualifying for Top 10) -->
+            <div id="name-entry-section" class="name-entry-section hidden">
+              <p class="name-prompt">You made the Top 10! Enter your name:</p>
+              <div class="name-input-row">
+                <input type="text" id="player-name-input" maxlength="12" placeholder="Your name" autocomplete="off" />
+                <button id="save-score-button">Save</button>
+              </div>
+              <p id="name-error" class="name-error hidden">Name is required (1-12 characters)</p>
+            </div>
 
             <h2>High Scores</h2>
-            <ol id="high-scores"></ol>
+            <div class="leaderboard-container">
+              <ol id="high-scores"></ol>
+            </div>
 
-            <button id="restart-button">Restart</button>
+            <div class="gameover-actions">
+              <div class="action-row action-row-top">
+                <button id="save-button" class="end-btn gameover-btn save hidden">Save</button>
+                <button id="discard-button" class="end-btn gameover-btn discard hidden">Discard</button>
+              </div>
+              <div class="action-row action-row-bottom">
+                <button id="restart-button" class="gameover-btn">Restart</button>
+                <button id="gameover-quit-button" class="gameover-btn">Quit</button>
+              </div>
+            </div>
 
           </div>
 

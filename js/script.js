@@ -8,6 +8,7 @@ window.onload = function () {
 
   const startButton = document.getElementById("start-button");
   const restartButton = document.getElementById("restart-button");
+  const gameoverQuitButton = document.getElementById("gameover-quit-button");
   const gameScreenElement = document.getElementById("game-screen");
 
   const introGameArea = document.getElementById("intro-game-area");
@@ -37,8 +38,8 @@ window.onload = function () {
 
     if (themeButton) {
       themeButton.textContent = isDarkMode
-        ? "TURN ON THE LIGHTS"
-        : "TURN OFF THE LIGHTS";
+        ? "Turn On The Lights"
+        : "Turn Off The Lights";
     }
   }
 
@@ -109,7 +110,7 @@ window.onload = function () {
 
   function updateMuteUI() {
     if (muteButton) {
-      muteButton.textContent = isMuted ? "UNMUTE" : "MUTE";
+      muteButton.textContent = isMuted ? "Unmute" : "Mute";
     }
   }
 
@@ -168,6 +169,14 @@ window.onload = function () {
     // restore volume, don't restart track
     startMusicIfNeeded();
   });
+
+  if (gameoverQuitButton) {
+    gameoverQuitButton.addEventListener("click", function () {
+      if (!ourGame) return;
+      ourGame.quitToStart();
+      this.blur();
+    });
+  }
 
   function showPauseOverlay() {
     if (pauseOverlay) pauseOverlay.classList.add("visible");

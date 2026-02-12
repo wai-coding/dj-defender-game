@@ -49,10 +49,10 @@ Defend the nightclub dancefloor from falling USB drives — move, shoot, and sur
 - Music fades down on Game Over, resumes on restart without restarting the track  
 
 ### UI & Branding
-- **Pause menu** (P key or MENU button) with Resume, Options, Restart, and Quit to Start  
-- Light / Dark theme toggle in pause menu options  
-- Best Score displayed on Start and Game Over screens  
-- Top 3 high scores stored in `localStorage` (score + level)  
+- **Pause menu** (P key or MENU button) with Resume, Options, Restart, and Quit  
+- **Top 10 leaderboard** — persistent high scores via `localStorage` (score + level)  
+- **Quit option** from both Pause menu and Game Over screen  
+- Light / Dark theme toggle — state persisted in `localStorage`  
 - Mobile-friendly touch controls  
 
 ### Technical Highlights

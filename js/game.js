@@ -473,33 +473,277 @@ class Game {
 
     this.finalScoreElement.innerText = this.score;
 
-    const highScoresFromLS = JSON.parse(localStorage.getItem("high-scores"));
+    const highScoresFromLS = JSON.parse(localStorage.getItem("high-scores")) || [];
 
-    const currentEntry = {
-      score: this.score,
-      level: this.level,
-    };
+    // Check if current score qualifies for Top 10
+    const qualifiesForTop10 = this.checkQualifiesForTop10(highScoresFromLS, this.score);
 
-    let updatedScores;
-
-    if (!highScoresFromLS) {
-      updatedScores = [currentEntry];
-    } else {
-      updatedScores = highScoresFromLS;
-      updatedScores.push(currentEntry);
-      updatedScores.sort((a, b) => b.score - a.score);
-      updatedScores = updatedScores.slice(0, 3);
+    // Set dynamic game over message
+    const top10Message = document.getElementById("top10-message");
+    if (top10Message) {
+      if (qualifiesForTop10) {
+        // Compute rank from merged/sorted list
+        const allForRank = [...highScoresFromLS, { score: this.score, isPending: true }];
+        allForRank.sort((a, b) => b.score - a.score);
+        const top10ForRank = allForRank.slice(0, 10);
+        const rank = top10ForRank.findIndex(e => e.isPending) + 1;
+        top10Message.textContent = "Congratulations! You placed #" + rank + "!";
+        top10Message.classList.remove("hidden", "miss");
+      } else {
+        top10Message.textContent = "Good run! Try again and climb the leaderboard.";
+        top10Message.classList.remove("hidden");
+        top10Message.classList.add("miss");
+      }
     }
 
-    localStorage.setItem("high-scores", JSON.stringify(updatedScores));
+    // Get UI elements - hide the old name entry section (now using inline)
+    const nameEntrySection = document.getElementById("name-entry-section");
+    nameEntrySection.classList.add("hidden");
+
+    const restartBtn = document.getElementById("restart-button");
+    const quitBtn = document.getElementById("gameover-quit-button");
+
+    // Get Save/Discard buttons
+    const saveBtn = document.getElementById("save-button");
+    const discardBtn = document.getElementById("discard-button");
+
+    if (qualifiesForTop10) {
+      // Disable Restart/Quit until save or discard
+      restartBtn.disabled = true;
+      quitBtn.disabled = true;
+
+      // Store current score/level for saving later
+      this._pendingScore = this.score;
+      this._pendingLevel = this.level;
+      this._pendingEntry = {
+        name: "",
+        score: this.score,
+        level: this.level,
+        isPending: true,
+      };
+
+      // Show Save/Discard buttons
+      saveBtn.classList.remove("hidden");
+      discardBtn.classList.remove("hidden");
+
+      // Render leaderboard with pending inline entry (input only, no inline save)
+      this.renderLeaderboardWithPending(highScoresFromLS, this._pendingEntry);
+
+      // Set up Save/Discard handlers
+      this.setupSaveDiscardHandlers(restartBtn, quitBtn, saveBtn, discardBtn);
+
+    } else {
+      // Does not qualify - enable buttons, show leaderboard normally
+      restartBtn.disabled = false;
+      quitBtn.disabled = false;
+
+      // Hide Save/Discard buttons
+      saveBtn.classList.add("hidden");
+      discardBtn.classList.add("hidden");
+
+      // Render existing leaderboard
+      this.renderLeaderboard(highScoresFromLS);
+    }
+
     this.updateBestScoreDisplay();
+  }
+
+  renderLeaderboardWithPending(existingScores, pendingEntry) {
+    // Merge pending entry with existing scores
+    const allScores = [...existingScores, pendingEntry];
+    allScores.sort((a, b) => b.score - a.score);
+    const top10 = allScores.slice(0, 10);
+
     this.highScoreContainer.innerHTML = "";
 
-    updatedScores.forEach((entry) => {
+    top10.forEach((entry, index) => {
       const li = document.createElement("li");
-      li.innerText = `${entry.score} points - Level ${entry.level}`;
+      li.className = "leaderboard-item";
+      if (index < 3) li.classList.add(`top-${index + 1}`);
+
+      const rank = index + 1;
+      const starHtml = rank <= 3 ? `<span class="rank-star">★</span>` : "";
+      const scoreDisplay = String(entry.score).padStart(6, "0");
+      const levelDisplay = "LVL " + String(entry.level).padStart(2, "0");
+
+      if (entry.isPending) {
+        // Render inline input for pending entry (no inline Save - it's in the button group)
+        li.classList.add("pending-row");
+        li.innerHTML = `
+          <span class="rank"><span class="rank-num">${rank}.</span>${starHtml}</span>
+          <input type="text" id="pending-name-input" class="pending-name-input" maxlength="12" placeholder="Name" autocomplete="off" />
+          <span class="leaderboard-score">${scoreDisplay}</span>
+          <span class="leaderboard-level">${levelDisplay}</span>
+        `;
+      } else {
+        // Render normal row
+        const displayName = entry.name || "AAA";
+        li.innerHTML = `
+          <span class="rank"><span class="rank-num">${rank}.</span>${starHtml}</span>
+          <span class="leaderboard-name">${this.escapeHtml(displayName)}</span>
+          <span class="leaderboard-score">${scoreDisplay}</span>
+          <span class="leaderboard-level">${levelDisplay}</span>
+        `;
+      }
 
       this.highScoreContainer.appendChild(li);
     });
+
+    // Focus the input after render
+    setTimeout(() => {
+      const input = document.getElementById("pending-name-input");
+      if (input) input.focus();
+    }, 50);
+  }
+
+  setupSaveDiscardHandlers(restartBtn, quitBtn, saveBtn, discardBtn) {
+    // Remove previous listeners if any
+    if (this._saveHandler) {
+      saveBtn.removeEventListener("click", this._saveHandler);
+    }
+    if (this._discardHandler) {
+      discardBtn.removeEventListener("click", this._discardHandler);
+    }
+    if (this._enterKeyHandler) {
+      document.removeEventListener("keydown", this._enterKeyHandler);
+    }
+
+    const finishFlow = () => {
+      // Re-enable Restart/Quit buttons
+      restartBtn.disabled = false;
+      quitBtn.disabled = false;
+
+      // Hide Save/Discard buttons
+      saveBtn.classList.add("hidden");
+      discardBtn.classList.add("hidden");
+
+      // Clean up pending state
+      this._pendingEntry = null;
+
+      // Clean up event listeners
+      if (this._saveHandler) {
+        saveBtn.removeEventListener("click", this._saveHandler);
+        this._saveHandler = null;
+      }
+      if (this._discardHandler) {
+        discardBtn.removeEventListener("click", this._discardHandler);
+        this._discardHandler = null;
+      }
+      if (this._enterKeyHandler) {
+        document.removeEventListener("keydown", this._enterKeyHandler);
+        this._enterKeyHandler = null;
+      }
+    };
+
+    const handleSave = () => {
+      const input = document.getElementById("pending-name-input");
+      if (!input) return;
+
+      const raw = input.value.trim();
+      const name = raw.length > 0 ? (this.validateAndNormalizeName(input.value) || "AAA") : "AAA";
+
+      // Save to localStorage
+      this.saveScoreWithName(name, this._pendingScore, this._pendingLevel);
+
+      finishFlow();
+    };
+
+    const handleDiscard = () => {
+      // Do NOT save - just re-render existing leaderboard
+      const highScoresFromLS = JSON.parse(localStorage.getItem("high-scores")) || [];
+      this.renderLeaderboard(highScoresFromLS);
+
+      finishFlow();
+    };
+
+    this._saveHandler = (e) => {
+      e.preventDefault();
+      handleSave();
+    };
+
+    this._discardHandler = (e) => {
+      e.preventDefault();
+      handleDiscard();
+    };
+
+    this._enterKeyHandler = (e) => {
+      const input = document.getElementById("pending-name-input");
+      if (input && document.activeElement === input && e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+
+    saveBtn.addEventListener("click", this._saveHandler);
+    discardBtn.addEventListener("click", this._discardHandler);
+    document.addEventListener("keydown", this._enterKeyHandler);
+  }
+
+  checkQualifiesForTop10(scores, currentScore) {
+    if (scores.length < 10) return true;
+    // scores should be sorted, but sort again for safety
+    const sorted = [...scores].sort((a, b) => b.score - a.score);
+    return currentScore > sorted[9].score;
+  }
+
+  validateAndNormalizeName(rawName) {
+    // Trim and normalize multiple spaces to single space
+    let name = rawName.trim().replace(/\s+/g, " ");
+    // Enforce length 1-12
+    if (name.length < 1 || name.length > 12) return null;
+    // Allow letters, numbers, spaces only
+    if (!/^[a-zA-Z0-9 ]+$/.test(name)) return null;
+    return name;
+  }
+
+  saveScoreWithName(name, score, level) {
+    const highScoresFromLS = JSON.parse(localStorage.getItem("high-scores")) || [];
+
+    const newEntry = {
+      name: name,
+      score: score,
+      level: level,
+    };
+
+    highScoresFromLS.push(newEntry);
+    highScoresFromLS.sort((a, b) => b.score - a.score);
+    const updatedScores = highScoresFromLS.slice(0, 10);
+
+    localStorage.setItem("high-scores", JSON.stringify(updatedScores));
+    this.updateBestScoreDisplay();
+    this.renderLeaderboard(updatedScores);
+  }
+
+  renderLeaderboard(scores) {
+    this.highScoreContainer.innerHTML = "";
+
+    scores.forEach((entry, index) => {
+      const li = document.createElement("li");
+      li.className = "leaderboard-item";
+      if (index < 3) li.classList.add(`top-${index + 1}`);
+
+      const rank = index + 1;
+      const starHtml = rank <= 3 ? `<span class="rank-star">★</span>` : "";
+
+      // Backward compatibility: use fallback name for old entries
+      const displayName = entry.name || "AAA";
+      const scoreDisplay = String(entry.score).padStart(6, "0");
+      const levelDisplay = "LVL " + String(entry.level).padStart(2, "0");
+
+      li.innerHTML = `
+        <span class="rank"><span class="rank-num">${rank}.</span>${starHtml}</span>
+        <span class="leaderboard-name">${this.escapeHtml(displayName)}</span>
+        <span class="leaderboard-score">${scoreDisplay}</span>
+        <span class="leaderboard-level">${levelDisplay}</span>
+      `;
+
+      this.highScoreContainer.appendChild(li);
+    });
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
   }
 }
