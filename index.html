@@ -17,52 +17,50 @@
 
         <div id="intro-game-area">
 
-          <div class="start-panel">
+          <!-- Main start menu -->
+          <div id="start-main-menu" class="start-panel">
             <h1>Dancefloor Defender</h1>
             <h2>Defend the club from bad DJs.</h2>
             <img id="game-logo" src="./images/logo.png" alt="Game Logo">
 
-            <div class="start-controls">
-              <p>How to play</p>
-
-              <div class="controls-columns">
-                <div class="controls-block">
-                  <h3 class="controls-title">Keyboard</h3>
-
-                  <div class="control-row">
-                    <span class="key">← →</span>
-                    <span class="action">Move left / right</span>
-                  </div>
-
-                  <div class="control-row">
-                    <span class="key">SPACE</span>
-                    <span class="action">Shoot</span>
-                  </div>
-                </div>
-
-                <div class="controls-block">
-                  <h3 class="controls-title">Touch</h3>
-
-                  <div class="control-row">
-                    <span class="key">Tap left</span>
-                    <span class="action">Move left</span>
-                  </div>
-
-                  <div class="control-row">
-                    <span class="key">Tap right</span>
-                    <span class="action">Move right</span>
-                  </div>
-
-                  <div class="control-row">
-                    <span class="key">Tap middle</span>
-                    <span class="action">Shoot</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button id="start-button">Start Game</button>
+            <button id="start-button" class="start-menu-btn">Start Game</button>
+            <button id="start-options-button" class="start-menu-btn start-secondary-btn">Options</button>
+            <button id="start-highscores-button" class="start-menu-btn start-secondary-btn">High Scores</button>
+            <button id="start-instructions-button" class="start-menu-btn start-secondary-btn">Instructions</button>
           </div>
+
+          <!-- Options sub-panel -->
+          <div id="start-options-panel" class="start-panel start-subpanel hidden">
+            <h1>Options</h1>
+            <div class="start-sub-content">
+              <button id="start-mute-button" type="button" class="start-menu-btn start-secondary-btn">Mute</button>
+              <button id="start-theme-button" type="button" class="start-menu-btn start-secondary-btn">Turn Off The Lights</button>
+            </div>
+            <button class="start-menu-btn start-back-btn" data-back="start-main-menu">Back</button>
+          </div>
+
+          <!-- High Scores sub-panel -->
+          <div id="start-highscores-panel" class="start-panel start-subpanel hidden">
+            <h1>High Scores</h1>
+            <div class="leaderboard-container start-leaderboard-container">
+              <ol id="start-high-scores" class="start-high-scores-list"></ol>
+            </div>
+            <button class="start-menu-btn start-back-btn" data-back="start-main-menu">Back</button>
+          </div>
+
+          <!-- Instructions sub-panel -->
+          <div id="start-instructions-panel" class="start-panel start-subpanel hidden">
+            <h1>Instructions</h1>
+            <div class="start-sub-content instructions-content">
+              <div class="control-row"><span class="key">← → / WASD</span><span class="action">Move</span></div>
+              <div class="control-row"><span class="key">SPACE</span><span class="action">Shoot</span></div>
+              <div class="control-row"><span class="key">P</span><span class="action">Pause</span></div>
+              <div class="control-row"><span class="key">M</span><span class="action">Mute</span></div>
+              <div class="control-row"><span class="key">L</span><span class="action">Theme</span></div>
+            </div>
+            <button class="start-menu-btn start-back-btn" data-back="start-main-menu">Back</button>
+          </div>
+
         </div>
       </div>
 
@@ -121,10 +119,10 @@
             <div id="name-entry-section" class="name-entry-section hidden">
               <p class="name-prompt">You made the Top 10! Enter your name:</p>
               <div class="name-input-row">
-                <input type="text" id="player-name-input" maxlength="12" placeholder="Your name" autocomplete="off" />
+                <input type="text" id="player-name-input" maxlength="10" placeholder="Your name" autocomplete="off" />
                 <button id="save-score-button">Save</button>
               </div>
-              <p id="name-error" class="name-error hidden">Name is required (1-12 characters)</p>
+              <p id="name-error" class="name-error hidden">Name is required (1-10 characters)</p>
             </div>
 
             <h2>High Scores</h2>

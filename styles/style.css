@@ -116,11 +116,8 @@ main {
 /* start panel */
 .start-panel {
   position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 16px;
 
-  width: 85%;
   padding: 16px 24px;
   border-radius: 10px;
   box-sizing: border-box;
@@ -218,34 +215,9 @@ main {
   font-size: 13px;
 }
 
-/* START BUTTON (Start Game) */
+/* START BUTTON (Start Game) — now uses .start-menu-btn base */
 #start-button {
-  margin-top: 8px;
-  padding: 10px 22px;
-  border-radius: 999px;
-  border: none;
-
-  background: linear-gradient(135deg, #f97316, #ec4899);
-  color: #0b1020;
-
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-
-  transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
-}
-
-#start-button:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
-}
-
-#start-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+  margin-top: 14px;
 }
 
 #end-game-area {
@@ -264,13 +236,8 @@ main {
 
 .end-panel {
   position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 16px;
 
-  width: 85%;
-  height: calc(100% - 16px);
-  max-height: calc(100% - 16px);
   padding: 16px 24px;
   border-radius: 10px;
   box-sizing: border-box;
@@ -546,11 +513,15 @@ main {
   margin-bottom: 8px;
 }
 
-#high-scores {
+#high-scores,
+#start-high-scores {
   list-style: none;
   padding: 0;
   margin: 0;
   width: 100%;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Arcade leaderboard item */
@@ -1137,4 +1108,102 @@ main {
 .pause-option-btn:hover {
   background: rgba(255, 255, 255, 0.14);
   transform: translateY(-1px);
+}
+
+/* ── Start menu sub-panels ── */
+
+/* Start menu button row */
+.start-menu-btn {
+  margin-top: 6px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #0b1020;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
+  width: 75%;
+}
+
+.start-menu-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
+}
+
+.start-menu-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+}
+
+/* Secondary start buttons (Options, High Scores, Instructions) */
+.start-secondary-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.start-secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.17);
+}
+
+/* Back button */
+.start-back-btn {
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.start-back-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+}
+
+/* Hidden state for subpanels */
+.start-panel.hidden {
+  display: none !important;
+}
+
+/* Content area inside subpanels */
+.start-sub-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+/* Instructions panel layout */
+.instructions-content {
+  align-items: flex-start;
+  padding: 0 24px;
+}
+
+.instructions-content .control-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+/* Start screen leaderboard container */
+.start-leaderboard-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 8px 0;
+}
+
+/* Override the start panel for subpanels to fill game area better */
+.start-subpanel {
+  overflow: hidden;
 }

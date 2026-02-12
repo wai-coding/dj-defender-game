@@ -571,7 +571,7 @@ class Game {
         li.classList.add("pending-row");
         li.innerHTML = `
           <span class="rank"><span class="rank-num">${rank}.</span>${starHtml}</span>
-          <input type="text" id="pending-name-input" class="pending-name-input" maxlength="12" placeholder="Name" autocomplete="off" />
+          <input type="text" id="pending-name-input" class="pending-name-input" maxlength="10" placeholder="Name" autocomplete="off" />
           <span class="leaderboard-score">${scoreDisplay}</span>
           <span class="leaderboard-level">${levelDisplay}</span>
         `;
@@ -689,10 +689,8 @@ class Game {
   validateAndNormalizeName(rawName) {
     // Trim and normalize multiple spaces to single space
     let name = rawName.trim().replace(/\s+/g, " ");
-    // Enforce length 1-12
-    if (name.length < 1 || name.length > 12) return null;
-    // Allow letters, numbers, spaces only
-    if (!/^[a-zA-Z0-9 ]+$/.test(name)) return null;
+    // Enforce length 1-10
+    if (name.length < 1 || name.length > 10) return null;
     return name;
   }
 

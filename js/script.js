@@ -135,6 +135,128 @@ window.onload = function () {
 
   updateMuteUI();
 
+  // ── Start menu sub-panel navigation ──
+  const startMainMenu = document.getElementById("start-main-menu");
+  const startOptionsPanel = document.getElementById("start-options-panel");
+  const startHighscoresPanel = document.getElementById("start-highscores-panel");
+  const startInstructionsPanel = document.getElementById("start-instructions-panel");
+  const startHighScoresList = document.getElementById("start-high-scores");
+
+  const startOptionsBtn = document.getElementById("start-options-button");
+  const startHighscoresBtn = document.getElementById("start-highscores-button");
+  const startInstructionsBtn = document.getElementById("start-instructions-button");
+  const startMuteBtn = document.getElementById("start-mute-button");
+  const startThemeBtn = document.getElementById("start-theme-button");
+
+  function showStartSubpanel(panel) {
+    if (startMainMenu) startMainMenu.classList.add("hidden");
+    if (panel) panel.classList.remove("hidden");
+  }
+
+  function showStartMainMenu() {
+    if (startOptionsPanel) startOptionsPanel.classList.add("hidden");
+    if (startHighscoresPanel) startHighscoresPanel.classList.add("hidden");
+    if (startInstructionsPanel) startInstructionsPanel.classList.add("hidden");
+    if (startMainMenu) startMainMenu.classList.remove("hidden");
+  }
+
+  function updateStartMuteUI() {
+    if (startMuteBtn) startMuteBtn.textContent = isMuted ? "Unmute" : "Mute";
+  }
+
+  function updateStartThemeUI() {
+    if (startThemeBtn) {
+      startThemeBtn.textContent = isDarkMode ? "Turn On The Lights" : "Turn Off The Lights";
+    }
+  }
+
+  function renderStartHighScores() {
+    if (!startHighScoresList) return;
+    const scores = JSON.parse(localStorage.getItem("high-scores")) || [];
+    startHighScoresList.innerHTML = "";
+    const top10 = scores.slice(0, 10);
+    top10.forEach((entry, index) => {
+      const li = document.createElement("li");
+      li.className = "leaderboard-item";
+      if (index < 3) li.classList.add("top-" + (index + 1));
+      const rank = index + 1;
+      const starHtml = rank <= 3 ? '<span class="rank-star">\u2605</span>' : "";
+      const displayName = entry.name || "AAA";
+      const scoreDisplay = String(entry.score).padStart(6, "0");
+      const levelDisplay = "LVL " + String(entry.level).padStart(2, "0");
+      // escapeHtml inline
+      const div = document.createElement("div");
+      div.textContent = displayName;
+      const safeName = div.innerHTML;
+      li.innerHTML =
+        '<span class="rank"><span class="rank-num">' + rank + '.</span>' + starHtml + '</span>' +
+        '<span class="leaderboard-name">' + safeName + '</span>' +
+        '<span class="leaderboard-score">' + scoreDisplay + '</span>' +
+        '<span class="leaderboard-level">' + levelDisplay + '</span>';
+      startHighScoresList.appendChild(li);
+    });
+  }
+
+  if (startOptionsBtn) {
+    startOptionsBtn.addEventListener("click", function () {
+      updateStartMuteUI();
+      updateStartThemeUI();
+      showStartSubpanel(startOptionsPanel);
+      this.blur();
+    });
+  }
+
+  if (startHighscoresBtn) {
+    startHighscoresBtn.addEventListener("click", function () {
+      renderStartHighScores();
+      showStartSubpanel(startHighscoresPanel);
+      this.blur();
+    });
+  }
+
+  if (startInstructionsBtn) {
+    startInstructionsBtn.addEventListener("click", function () {
+      showStartSubpanel(startInstructionsPanel);
+      this.blur();
+    });
+  }
+
+  // Start Options panel — mute button
+  if (startMuteBtn) {
+    startMuteBtn.addEventListener("click", function () {
+      isMuted = !isMuted;
+      localStorage.setItem(MUTE_LS_KEY, isMuted);
+      if (isMuted) {
+        bgMusic.pause();
+      } else {
+        bgMusic.volume = 0;
+        bgMusic.play().catch(() => {});
+        fadeAudio(bgMusic, MUSIC_VOLUME, 300);
+      }
+      updateMuteUI();
+      updateStartMuteUI();
+      this.blur();
+    });
+  }
+
+  // Start Options panel — theme button
+  if (startThemeBtn) {
+    startThemeBtn.addEventListener("click", function () {
+      isDarkMode = !isDarkMode;
+      applyTheme();
+      updateStartThemeUI();
+      this.blur();
+    });
+  }
+
+  // Back buttons (all use data-back attribute)
+  document.querySelectorAll(".start-back-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      showStartMainMenu();
+      this.blur();
+    });
+  });
+
   // prevent restarting music on game restart
   let musicStarted = false;
 
@@ -174,6 +296,7 @@ window.onload = function () {
     gameoverQuitButton.addEventListener("click", function () {
       if (!ourGame) return;
       ourGame.quitToStart();
+      showStartMainMenu();
       this.blur();
     });
   }
@@ -236,11 +359,42 @@ window.onload = function () {
       if (!ourGame) return;
       hidePauseOverlay();
       ourGame.quitToStart();
+      showStartMainMenu();
       this.blur();
     });
   }
 
   window.addEventListener("keydown", function (event) {
+    // ── Skip global hotkeys when typing in an input ──
+    const tag = document.activeElement && document.activeElement.tagName;
+    const isTyping = tag === "INPUT" || tag === "TEXTAREA";
+
+    // ── Global hotkeys (work on ALL screens, except when typing) ──
+    if (!isTyping && event.code === "KeyM") {
+      isMuted = !isMuted;
+      localStorage.setItem(MUTE_LS_KEY, isMuted);
+
+      if (isMuted) {
+        bgMusic.pause();
+      } else {
+        bgMusic.volume = 0;
+        bgMusic.play().catch(() => {});
+        fadeAudio(bgMusic, MUSIC_VOLUME, 300);
+      }
+
+      updateMuteUI();
+      updateStartMuteUI();
+      return;
+    }
+
+    if (!isTyping && event.code === "KeyL") {
+      isDarkMode = !isDarkMode;
+      applyTheme();
+      updateStartThemeUI();
+      return;
+    }
+
+    // ── Game-specific controls below ──
     if (!ourGame || !ourGame.player) return;
 
     if (event.code === "KeyP") {
