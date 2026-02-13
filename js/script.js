@@ -70,6 +70,28 @@ window.onload = function () {
   const enemyHitSound = new Audio("./assets/enemy-hit.wav");
   enemyHitSound.volume = SFX_VOLUME;
 
+  // ── SFX manager: pre-loaded Audio objects, mute-aware ──
+  const loseLifeSound = new Audio("./assets/lose-life.wav");
+  loseLifeSound.volume = SFX_VOLUME;
+
+  const gameOverSound = new Audio("./assets/game-over.wav");
+  gameOverSound.volume = SFX_VOLUME;
+
+  const nextLevelSound = new Audio("./assets/next-level.wav");
+  nextLevelSound.volume = SFX_VOLUME;
+
+  const highScoreSound = new Audio("./assets/high-score.wav");
+  highScoreSound.volume = SFX_VOLUME;
+
+  /** Play a named SFX once, respecting mute. Resets currentTime for rapid retrigger. */
+  function playSfx(sound) {
+    if (isMuted) return;
+    try {
+      sound.currentTime = 0;
+      sound.play();
+    } catch (e) { /* browser autoplay guard */ }
+  }
+
   let isMuted = localStorage.getItem(MUTE_LS_KEY) === "true";
 
   function fadeAudio(audio, targetVolume, duration) {
@@ -105,6 +127,51 @@ window.onload = function () {
 
   // expose globally for game.js
   window.playEnemyHitSound = playEnemyHitSound;
+
+  // ── Music ducking while important SFX plays ──
+  const DUCK_VOLUME = 0.10;       // bgMusic volume while SFX is playing
+  let activeDuckCount = 0;        // track overlapping ducks
+
+  function duckMusicWhile(sound) {
+    if (isMuted) return;
+    if (bgMusic.paused) return;
+
+    activeDuckCount++;
+    // lower music immediately
+    bgMusic.volume = DUCK_VOLUME;
+
+    function restoreMusic() {
+      activeDuckCount--;
+      if (activeDuckCount <= 0) {
+        activeDuckCount = 0;
+        // only restore if still playing and not muted
+        if (!isMuted && !bgMusic.paused) {
+          fadeAudio(bgMusic, MUSIC_VOLUME, 300);
+        }
+      }
+    }
+
+    sound.addEventListener("ended", restoreMusic, { once: true });
+    // safety fallback: restore after sound duration + buffer
+    const fallbackMs = (sound.duration && isFinite(sound.duration))
+      ? (sound.duration * 1000 + 500) : 5000;
+    setTimeout(function () {
+      // only fire if ended didn't fire yet (count still > 0)
+      if (activeDuckCount > 0) restoreMusic();
+    }, fallbackMs);
+  }
+
+  // expose SFX for game.js (B, C, D, E)
+  window.playLoseLifeSound  = function () { playSfx(loseLifeSound); };
+  window.playGameOverSound  = function () {
+    duckMusicWhile(gameOverSound);
+    playSfx(gameOverSound);
+  };
+  window.playNextLevelSound = function () { playSfx(nextLevelSound); };
+  window.playHighScoreSound = function () {
+    duckMusicWhile(highScoreSound);
+    playSfx(highScoreSound);
+  };
 
   window.onGameOver = function () {
     if (!isMuted) {

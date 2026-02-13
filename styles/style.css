@@ -909,6 +909,7 @@ main {
 
 .end-btn.hidden {
   visibility: hidden;
+  pointer-events: none;
 }
 
 /* Disabled state for buttons */
@@ -1212,7 +1213,8 @@ main {
 
 /* Instructions panel layout */
 .instructions-content {
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   padding: 0 24px;
 }
 
@@ -1220,6 +1222,7 @@ main {
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   margin-bottom: 8px;
 }
@@ -1232,7 +1235,94 @@ main {
   margin: 8px 0;
 }
 
+/* Tighter spacing inside High Scores panel for more list room */
+#start-highscores-panel {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+#start-highscores-panel h1 {
+  margin: 4px 0 2px;
+  font-size: 26px;
+}
+#start-highscores-panel .start-leaderboard-container {
+  margin: 2px 0;
+  flex: 1;
+  min-height: 0;
+}
+#start-highscores-panel .start-back-btn {
+  margin-top: 4px;
+  padding: 7px 18px;
+  font-size: 11px;
+}
+
+/* Start menu high scores sizing */
+#start-highscores-panel #start-high-scores {
+  max-width: 420px;
+}
+
+#start-highscores-panel .leaderboard-item {
+  min-height: 30px;
+  padding: 4px 10px;
+}
+
+#start-highscores-panel .rank,
+#start-highscores-panel .leaderboard-name,
+#start-highscores-panel .leaderboard-score,
+#start-highscores-panel .leaderboard-level {
+  font-size: 13px;
+}
+
 /* Override the start panel for subpanels to fill game area better */
 .start-subpanel {
   overflow: hidden;
+}
+
+/* ── High-score overlay (inside #game-screen) ── */
+#highscore-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: center;
+  max-width: calc(100% - 24px);
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: clamp(14px, 3.4vw, 22px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 0 20px rgba(251, 191, 36, 0.8),
+    0 0 40px rgba(251, 191, 36, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 60;
+  transition: opacity 400ms ease-out, transform 400ms ease-out;
+}
+
+#highscore-indicator.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#highscore-indicator.top1 {
+  font-size: clamp(16px, 4vw, 26px);
+  letter-spacing: 1px;
+  text-shadow:
+    0 0 30px rgba(251, 191, 36, 1),
+    0 0 60px rgba(251, 191, 36, 0.6),
+    0 0 90px rgba(249, 115, 22, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+  animation: hs-pulse 600ms ease-in-out 2;
+}
+
+@keyframes hs-pulse {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  50%  { transform: translate(-50%, -50%) scale(1.08); }
+  100% { transform: translate(-50%, -50%) scale(1); }
 }

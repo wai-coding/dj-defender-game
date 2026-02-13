@@ -33,6 +33,7 @@ class Game {
     this.livesElement = document.getElementById("lives");
     this.levelIndicator = document.getElementById("level-indicator");
     this.damageOverlay = document.getElementById("damage-overlay");
+    this.highscoreIndicator = document.getElementById("highscore-indicator");
     this.maxLives = 3;
 
     this.player = null;
@@ -45,6 +46,14 @@ class Game {
 
     this.gameInterval = null;
     this.isPaused = false;
+
+    // Overlay queue system
+    this.overlayQueue = [];
+    this.isOverlayActive = false;
+
+    // Per-run highscore milestone flags
+    this.top10Triggered = false;
+    this.top1Triggered = false;
 
     this.width = 500;
     this.height = 600;
@@ -80,12 +89,86 @@ class Game {
 
   showLevelUp(level) {
     if (!this.levelIndicator) return;
-    this.levelIndicator.textContent = `Level ${level}`;
-    this.levelIndicator.classList.add("show");
-    clearTimeout(this._levelTimeout);
-    this._levelTimeout = setTimeout(() => {
-      this.levelIndicator.classList.remove("show");
-    }, 1000);
+    this.queueOverlay(
+      () => {
+        this.levelIndicator.textContent = `Level ${level}`;
+        this.levelIndicator.classList.add("show");
+        if (window.playNextLevelSound) window.playNextLevelSound();
+      },
+      () => {
+        this.levelIndicator.classList.remove("show");
+      },
+      1500
+    );
+  }
+
+  // ── Overlay queue system ──
+
+  queueOverlay(showFn, hideFn, duration) {
+    if (this.isOverlayActive) {
+      this.overlayQueue.push({ showFn, hideFn, duration });
+    } else {
+      this.runOverlay(showFn, hideFn, duration);
+    }
+  }
+
+  runOverlay(showFn, hideFn, duration) {
+    this.isOverlayActive = true;
+    showFn();
+    clearTimeout(this._overlayTimeout);
+    this._overlayTimeout = setTimeout(() => {
+      hideFn();
+      this.isOverlayActive = false;
+      if (this.overlayQueue.length > 0) {
+        const next = this.overlayQueue.shift();
+        this.runOverlay(next.showFn, next.hideFn, next.duration);
+      }
+    }, duration);
+  }
+
+  // ── Top milestone overlay during gameplay ──
+
+  queueTopMilestone(type) {
+    if (!this.highscoreIndicator) return;
+    let text, duration;
+    if (type === "top1") {
+      text = "You just beat the game record!";
+      duration = 2600;
+    } else {
+      text = "You just made the Top 10!";
+      duration = 1800;
+    }
+    this.queueOverlay(
+      () => {
+        this.highscoreIndicator.textContent = text;
+        this.highscoreIndicator.classList.remove("top1");
+        if (type === "top1") this.highscoreIndicator.classList.add("top1");
+        this.highscoreIndicator.classList.add("show");
+        if (window.playHighScoreSound) window.playHighScoreSound();
+      },
+      () => {
+        this.highscoreIndicator.classList.remove("show", "top1");
+      },
+      duration
+    );
+  }
+
+  checkHighScoreMilestonesDuringRun() {
+    const scores = JSON.parse(localStorage.getItem("high-scores")) || [];
+    scores.sort((a, b) => b.score - a.score);
+
+    const has10Entries = scores.length >= 10;
+    const top1Score = scores.length > 0 ? scores[0].score : 0;
+    const top10Score = has10Entries ? scores[9].score : null;
+
+    if (!this.top1Triggered && this.score > top1Score) {
+      this.queueTopMilestone("top1");
+      this.top1Triggered = true;
+      this.top10Triggered = true; // suppress top10 if top1 fires
+    } else if (has10Entries && !this.top10Triggered && this.score > top10Score) {
+      this.queueTopMilestone("top10");
+      this.top10Triggered = true;
+    }
   }
 
   updateLivesDisplay() {
@@ -111,6 +194,7 @@ class Game {
 
   setScore(nextScore) {
     this.score = nextScore;
+    this.checkHighScoreMilestonesDuringRun();
 
     // cancel previous to avoid stacking
     if (this.scoreAnimationId) {
@@ -208,6 +292,13 @@ class Game {
 
       if (this.levelIndicator) this.levelIndicator.classList.remove("show");
       if (this.damageOverlay) this.damageOverlay.classList.remove("flash");
+      if (this.highscoreIndicator) this.highscoreIndicator.classList.remove("show", "top1");
+      clearTimeout(this._hsTimeout);
+      clearTimeout(this._overlayTimeout);
+      this.overlayQueue = [];
+      this.isOverlayActive = false;
+      this.top10Triggered = false;
+      this.top1Triggered = false;
 
       this.updateBestScoreDisplay();
 
@@ -263,6 +354,13 @@ class Game {
 
       if (this.levelIndicator) this.levelIndicator.classList.remove("show");
       if (this.damageOverlay) this.damageOverlay.classList.remove("flash");
+      if (this.highscoreIndicator) this.highscoreIndicator.classList.remove("show", "top1");
+      clearTimeout(this._hsTimeout);
+      clearTimeout(this._overlayTimeout);
+      this.overlayQueue = [];
+      this.isOverlayActive = false;
+      this.top10Triggered = false;
+      this.top1Triggered = false;
 
       this.updateBestScoreDisplay();
 
@@ -303,7 +401,14 @@ class Game {
 
     if (this.levelIndicator) this.levelIndicator.classList.remove("show");
     if (this.damageOverlay) this.damageOverlay.classList.remove("flash");
+    if (this.highscoreIndicator) this.highscoreIndicator.classList.remove("show", "top1");
     clearTimeout(this._levelTimeout);
+    clearTimeout(this._hsTimeout);
+    clearTimeout(this._overlayTimeout);
+    this.overlayQueue = [];
+    this.isOverlayActive = false;
+    this.top10Triggered = false;
+    this.top1Triggered = false;
 
     this.hideScreen(this.gameContainer);
     this.hideScreen(this.endScreen);
@@ -401,6 +506,10 @@ class Game {
 
         if (this.lives <= 0) {
           this.gameIsOver = true;
+          // game-over SFX plays in gameOver(); skip lose-life
+        } else {
+          // B) lose-life SFX (non-fatal hit only)
+          if (window.playLoseLifeSound) window.playLoseLifeSound();
         }
 
         continue;
@@ -461,6 +570,13 @@ class Game {
   }
 
   gameOver() {
+    // Clear pending overlay queue (let active highscore overlay finish naturally)
+    this.overlayQueue = [];
+    if (this.levelIndicator) this.levelIndicator.classList.remove("show");
+
+    // C) game-over SFX (once, on final life loss)
+    if (window.playGameOverSound) window.playGameOverSound();
+
     // notify audio to fade music
     if (window.onGameOver) {
       window.onGameOver();
@@ -478,15 +594,50 @@ class Game {
     // Check if current score qualifies for Top 10
     const qualifiesForTop10 = this.checkQualifiesForTop10(highScoresFromLS, this.score);
 
+    // Compute rank for E) Top10 / Top1 overlay
+    let rank = 0;
+    if (qualifiesForTop10) {
+      const allForRank = [...highScoresFromLS, { score: this.score, isPending: true }];
+      allForRank.sort((a, b) => b.score - a.score);
+      const top10ForRank = allForRank.slice(0, 10);
+      rank = top10ForRank.findIndex(e => e.isPending) + 1;
+    }
+
+    // E) High-score overlay + SFX — skip if already shown during gameplay
+    if (!this.top1Triggered && !this.top10Triggered) {
+      const hsIndicator = document.getElementById("highscore-indicator");
+      if (hsIndicator) {
+        hsIndicator.classList.remove("show", "top1");
+        clearTimeout(this._hsTimeout);
+
+        if (qualifiesForTop10 && rank > 0) {
+          if (rank === 1) {
+            hsIndicator.textContent = "NEW #1 HIGH SCORE!";
+            hsIndicator.classList.add("top1");
+          } else {
+            hsIndicator.textContent = "TOP 10!  #" + rank;
+          }
+
+          // Play high-score SFX once (covers both top1 and top10)
+          if (window.playHighScoreSound) window.playHighScoreSound();
+
+          // Show after end screen appears
+          setTimeout(() => {
+            hsIndicator.classList.add("show");
+          }, 300);
+
+          const duration = rank === 1 ? 2500 : 1800;
+          this._hsTimeout = setTimeout(() => {
+            hsIndicator.classList.remove("show");
+          }, 300 + duration);
+        }
+      }
+    }
+
     // Set dynamic game over message
     const top10Message = document.getElementById("top10-message");
     if (top10Message) {
       if (qualifiesForTop10) {
-        // Compute rank from merged/sorted list
-        const allForRank = [...highScoresFromLS, { score: this.score, isPending: true }];
-        allForRank.sort((a, b) => b.score - a.score);
-        const top10ForRank = allForRank.slice(0, 10);
-        const rank = top10ForRank.findIndex(e => e.isPending) + 1;
         top10Message.textContent = "Congratulations! You placed #" + rank + "!";
         top10Message.classList.remove("hidden", "miss");
       } else {
