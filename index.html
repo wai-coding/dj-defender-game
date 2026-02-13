@@ -52,11 +52,16 @@
           <div id="start-instructions-panel" class="start-panel start-subpanel hidden">
             <h1>Instructions</h1>
             <div class="start-sub-content instructions-content">
-              <div class="control-row"><span class="key">← → / WASD</span><span class="action">Move</span></div>
+              <p class="controls-title">Keyboard</p>
+              <div class="control-row"><span class="key">← →</span><span class="action">Move</span></div>
               <div class="control-row"><span class="key">SPACE</span><span class="action">Shoot</span></div>
-              <div class="control-row"><span class="key">P</span><span class="action">Pause</span></div>
+              <div class="control-row"><span class="key">P / Menu</span><span class="action">Pause</span></div>
               <div class="control-row"><span class="key">M</span><span class="action">Mute</span></div>
               <div class="control-row"><span class="key">L</span><span class="action">Theme</span></div>
+              <div class="control-row"><span class="key">ENTER</span><span class="action">Save name</span></div>
+              <p class="controls-title">Touch</p>
+              <div class="control-row"><span class="key">Left / Right</span><span class="action">Move</span></div>
+              <div class="control-row"><span class="key">Center tap</span><span class="action">Shoot</span></div>
             </div>
             <button class="start-menu-btn start-back-btn" data-back="start-main-menu">Back</button>
           </div>
@@ -75,14 +80,20 @@
           <div id="pause-overlay">
             <div id="pause-card">
               <h2>PAUSED</h2>
-              <button id="resume-button" class="pause-btn">Resume</button>
-              <button id="options-button" class="pause-btn">Options</button>
-              <div id="options-panel">
+              <div id="pause-main">
+                <button id="resume-button" class="pause-btn">Resume</button>
+                <button id="pause-restart-button" class="pause-btn">Restart</button>
+                <button id="options-button" class="pause-btn">Options</button>
+                <button id="quit-button" class="pause-btn">Quit</button>
+              </div>
+              <div id="pause-options" class="pause-section-hidden">
                 <button id="pause-mute-button" type="button" class="pause-btn pause-option-btn">Mute</button>
                 <button id="pause-theme-button" type="button" class="pause-btn pause-option-btn">Turn Off The Lights</button>
+                <div id="pause-options-nav">
+                  <button id="pause-back-button" class="pause-btn pause-nav-btn">Back</button>
+                  <button id="pause-options-resume" class="pause-btn pause-nav-btn pause-nav-resume">Resume</button>
+                </div>
               </div>
-              <button id="pause-restart-button" class="pause-btn">Restart</button>
-              <button id="quit-button" class="pause-btn">Quit</button>
             </div>
           </div>
 

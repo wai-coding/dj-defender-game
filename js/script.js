@@ -18,7 +18,11 @@ window.onload = function () {
   const pauseMenuButton = document.getElementById("pause-menu-button");
   const resumeButton = document.getElementById("resume-button");
   const optionsButton = document.getElementById("options-button");
-  const optionsPanel = document.getElementById("options-panel");
+  const pauseMain = document.getElementById("pause-main");
+  const pauseOptions = document.getElementById("pause-options");
+  const pauseBackButton = document.getElementById("pause-back-button");
+  const pauseOptionsResume = document.getElementById("pause-options-resume");
+  const pauseTitle = document.querySelector("#pause-card h2");
   const pauseRestartButton = document.getElementById("pause-restart-button");
   const quitButton = document.getElementById("quit-button");
 
@@ -307,7 +311,10 @@ window.onload = function () {
 
   function hidePauseOverlay() {
     if (pauseOverlay) pauseOverlay.classList.remove("visible");
-    if (optionsPanel) optionsPanel.classList.remove("visible");
+    // Reset to main menu view
+    if (pauseMain) pauseMain.classList.remove("pause-section-hidden");
+    if (pauseOptions) pauseOptions.classList.add("pause-section-hidden");
+    if (pauseTitle) pauseTitle.textContent = "PAUSED";
   }
 
   function doPauseToggle() {
@@ -338,7 +345,27 @@ window.onload = function () {
 
   if (optionsButton) {
     optionsButton.addEventListener("click", function () {
-      if (optionsPanel) optionsPanel.classList.toggle("visible");
+      if (pauseMain) pauseMain.classList.add("pause-section-hidden");
+      if (pauseOptions) pauseOptions.classList.remove("pause-section-hidden");
+      if (pauseTitle) pauseTitle.textContent = "OPTIONS";
+      this.blur();
+    });
+  }
+
+  if (pauseBackButton) {
+    pauseBackButton.addEventListener("click", function () {
+      if (pauseOptions) pauseOptions.classList.add("pause-section-hidden");
+      if (pauseMain) pauseMain.classList.remove("pause-section-hidden");
+      if (pauseTitle) pauseTitle.textContent = "PAUSED";
+      this.blur();
+    });
+  }
+
+  if (pauseOptionsResume) {
+    pauseOptionsResume.addEventListener("click", function () {
+      if (ourGame && ourGame.isPaused) {
+        doPauseToggle();
+      }
       this.blur();
     });
   }
